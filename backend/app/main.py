@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 from app.api.v1 import router as api_v1_router
 from app.bootstrap import bootstrap_all_registries
 from app.config import settings
+from app.core.db import close_db, init_db, uses_sqlite_database
 from app.schemas.common import ApiResponse
 
 
@@ -54,12 +55,15 @@ async def validation_exception_handler(request: Request, exc: Exception) -> JSON
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """应用生命周期：启动时初始化，关闭时清理。"""
+    """应用生命周期：初始化运行期注册，并为本地 SQLite 准备数据库表。"""
     # 启动时：供应商注册 + 任务执行器注册（幂等）
     bootstrap_all_registries()
+    # SQLite 是零配置的本地开发默认值；外部数据库仍由迁移/部署初始化流程管理。
+    if uses_sqlite_database(settings.database_url):
+        await init_db()
     yield
     # 关闭时：清理资源
-    pass
+    await close_db()
 
 
 app = FastAPI(

@@ -59,6 +59,11 @@ class Base(DeclarativeBase):
     pass
 
 
+def uses_sqlite_database(database_url: str) -> bool:
+    """判断连接串是否指向 SQLite，用于限制本地开发专用的建表行为。"""
+    return database_url.lower().startswith("sqlite")
+
+
 async def init_db() -> None:
     """创建所有表（开发/迁移用）。"""
     # 确保 ORM 模型已导入，从而注册到 Base.metadata

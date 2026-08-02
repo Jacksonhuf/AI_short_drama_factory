@@ -8,18 +8,18 @@ from app.core.contracts.video_generation import VideoGenerationInput
 from app.core.integrations.video_capabilities import (
     VideoModelCapability,
     clear_video_model_capability_overrides,
-    infer_ratio_from_size,
     register_video_model_capability,
+    resolve_effective_ratio,
     resolve_video_capability,
     validate_video_options,
 )
 
 
-def test_infer_ratio_from_size_supports_ratio_and_resolution() -> None:
-    assert infer_ratio_from_size("16:9") == "16:9"
-    assert infer_ratio_from_size("1920x1080") == "16:9"
-    assert infer_ratio_from_size("720x1280") == "9:16"
-    assert infer_ratio_from_size("abc") is None
+def test_resolve_effective_ratio_uses_the_contract_ratio() -> None:
+    """宽高比是视频生成契约的唯一主参数，不再从尺寸字符串反推。"""
+    input_ = VideoGenerationInput(prompt="test", ratio="9:16")
+
+    assert resolve_effective_ratio(input_) == "9:16"
 
 
 def test_resolve_video_capability_prefers_longest_prefix() -> None:
@@ -50,7 +50,7 @@ def test_validate_video_options_rejects_capability_mismatch() -> None:
         capability=VideoModelCapability(supports_seed=False),
     )
     try:
-        inp = VideoGenerationInput(prompt="test", model="seedream-video-v1", seed=7)
+        inp = VideoGenerationInput(prompt="test", model="seedream-video-v1", ratio="16:9", seed=7)
         with pytest.raises(ValueError) as exc_info:
             validate_video_options(provider="volcengine", model=inp.model, input_=inp)
         assert "seed is not supported" in str(exc_info.value)

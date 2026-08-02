@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.core.db import Base
+from app.core.db import Base, uses_sqlite_database
 from app.core.db_sync import _to_sync_database_url
 from app.core.task_manager import SyncSqlAlchemyTaskStore
 from app.core.task_manager.types import TaskStatus
@@ -14,6 +14,13 @@ def test_to_sync_database_url_converts_async_drivers() -> None:
         == "mysql+pymysql://root:123456@localhost:3306/jellyfish"
     )
     assert _to_sync_database_url("sqlite+aiosqlite:///./jellyfish.db") == "sqlite:///./jellyfish.db"
+
+
+def test_uses_sqlite_database_only_for_sqlite_urls() -> None:
+    """本地启动建表逻辑不得作用于需要迁移的外部数据库。"""
+    assert uses_sqlite_database("sqlite+aiosqlite:///./jellyfish.db") is True
+    assert uses_sqlite_database("SQLITE:///./jellyfish.db") is True
+    assert uses_sqlite_database("mysql+aiomysql://user:password@db:3306/jellyfish") is False
 
 
 def test_sync_task_store_roundtrip() -> None:
