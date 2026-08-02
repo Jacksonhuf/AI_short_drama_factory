@@ -29,6 +29,16 @@ from app.models.studio import (
 )
 
 
+class _EmptyScalarResult:
+    """模拟无候选记录的 SQLAlchemy 标量查询结果。"""
+
+    def scalars(self) -> "_EmptyScalarResult":
+        return self
+
+    def first(self) -> None:
+        return None
+
+
 class _FakeShotSubresourceDB:
     """最小 DB 替身：仅覆盖镜头子资源接口测试所需行为。"""
 
@@ -104,6 +114,10 @@ class _FakeShotSubresourceDB:
             self.frame_images.pop(obj.id, None)
             return
         raise TypeError(f"Unsupported object type: {type(obj)!r}")
+
+    async def execute(self, _statement: object) -> _EmptyScalarResult:
+        """返回空候选查询结果，覆盖删除对白时的状态回退查询。"""
+        return _EmptyScalarResult()
 
 
 def _override_db(db: _FakeShotSubresourceDB):
