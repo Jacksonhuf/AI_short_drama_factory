@@ -17,6 +17,8 @@ declare global {
  */
 export function initOpenAPI(base: string = '') {
   OpenAPI.BASE = base
+  OpenAPI.WITH_CREDENTIALS = true
+  OpenAPI.CREDENTIALS = 'include'
 }
 
 const runtimeBackendUrl = window.__ENV?.BACKEND_URL

@@ -40,6 +40,13 @@ class Settings(BaseSettings):
     # 也兼容 JSON 数组：'["http://a","http://b"]'
     cors_origins: str = "http://localhost:7788,http://127.0.0.1:7788,http://[::1]:7788"
 
+    # 应用级管理员门禁：本地开发默认关闭，生产部署必须显式提供密码和会话密钥。
+    auth_enabled: bool = False
+    auth_admin_password: str | None = None
+    auth_session_secret: str = "unsafe-local-development-session-secret"
+    auth_session_max_age_seconds: int = 60 * 60 * 12
+    auth_cookie_secure: bool = False
+
     @property
     def cors_origins_list(self) -> list[str]:
         s = (self.cors_origins or "").strip()
@@ -69,6 +76,15 @@ class Settings(BaseSettings):
         if not self.celery_broker_url or not str(self.celery_broker_url).strip():
             password_part = f":{self.redis_password}@" if self.redis_password else ""
             self.celery_broker_url = f"redis://{password_part}{self.redis_host}:{self.redis_port}/{self.redis_db}"
+
+    def validate_auth_configuration(self) -> None:
+        """确保启用认证的部署不会以缺失或开发期会话密钥启动。"""
+        if not self.auth_enabled:
+            return
+        if not self.auth_admin_password:
+            raise RuntimeError("AUTH_ADMIN_PASSWORD must be configured when AUTH_ENABLED=true")
+        if self.auth_session_secret == "unsafe-local-development-session-secret":
+            raise RuntimeError("AUTH_SESSION_SECRET must be configured when AUTH_ENABLED=true")
 
 
 settings = Settings()

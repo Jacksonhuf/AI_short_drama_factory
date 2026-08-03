@@ -27,6 +27,8 @@ REDIS_DB=0
 RUSTFS_ACCESS_KEY=jellyfish
 RUSTFS_SECRET_KEY=$(generate_secret)
 S3_BUCKET_NAME=jellyfish-assets
+AUTH_ADMIN_PASSWORD=$(generate_secret)
+AUTH_SESSION_SECRET=$(generate_secret)
 # Configure an AI provider key on the VPS when real generation is required.
 OPENAI_API_KEY=
 EOF

@@ -8,6 +8,7 @@ export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
 export type { ActionBeatPhaseRead } from './models/ActionBeatPhaseRead';
+export type { AdminLoginRequest } from './models/AdminLoginRequest';
 export type { ApiResponse_AsyncTaskCreateRead_ } from './models/ApiResponse_AsyncTaskCreateRead_';
 export type { ApiResponse_ChapterRead_ } from './models/ApiResponse_ChapterRead_';
 export type { ApiResponse_CharacterPortraitAnalysisResult_ } from './models/ApiResponse_CharacterPortraitAnalysisResult_';
@@ -248,6 +249,7 @@ export type { VideoGenerationOptionsRead } from './models/VideoGenerationOptions
 export type { VideoGenerationTaskRequest } from './models/VideoGenerationTaskRequest';
 export type { VideoPromptPreviewResponse } from './models/VideoPromptPreviewResponse';
 
+export { AuthService } from './services/AuthService';
 export { DefaultService } from './services/DefaultService';
 export { FilmService } from './services/FilmService';
 export { HealthService } from './services/HealthService';
