@@ -63,7 +63,8 @@ jobs:
 
       - name: Copy deployment configuration and SQL seeds
         run: |
-          ssh -p "${VPS_PORT:-22}" "${VPS_USER}@${VPS_HOST}" "mkdir -p '${DEPLOY_PATH}'"
+          ssh -p "${VPS_PORT:-22}" "${VPS_USER}@${VPS_HOST}" \
+            "command -v tar >/dev/null 2>&1 || dnf install -y tar; mkdir -p '${DEPLOY_PATH}'"
           tar -C deploy -czf - vps | ssh -p "${VPS_PORT:-22}" "${VPS_USER}@${VPS_HOST}" \
             "tar -xzf - -C '${DEPLOY_PATH}'"
           tar -C backend -czf - sql | ssh -p "${VPS_PORT:-22}" "${VPS_USER}@${VPS_HOST}" \
