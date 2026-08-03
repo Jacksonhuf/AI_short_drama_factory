@@ -11,5 +11,8 @@ description: "记录当前正在推进的开发计划、改造方案与阶段性
 
 当前计划入口：
 
+- [产品需求文档（PRD）](/docs/plans/product-prd/)
+- [产品详细方案与交付设计](/docs/plans/product-delivery-plan/)
+- [UI 设计规范与体验改造方案](/docs/plans/ui-design-spec/)
 - [开发规划](/docs/plans/development-plan/)
 - [任务异步化与取消方案](/docs/plans/task-async-cancellation-plan/)
