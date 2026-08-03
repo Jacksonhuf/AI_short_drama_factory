@@ -9,7 +9,8 @@ COPY front/package.json front/pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
 COPY front/ ./
-RUN pnpm run build
+ARG VITE_BACKEND_URL
+RUN if [ -n "$VITE_BACKEND_URL" ]; then VITE_BACKEND_URL="$VITE_BACKEND_URL" pnpm run build; else pnpm run build; fi
 
 
 FROM nginx:1.27-alpine AS runtime

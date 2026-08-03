@@ -12,6 +12,7 @@ description: "聚焦怎么开发、怎么协作、怎么接入前后端能力的
 - [AI 工作流](/docs/guide/ai-workflow/)
 - [LLM 供应商注册与扩展](/docs/guide/llm-provider-registration/)
 - [通过 GitHub Actions 部署前端到 Vercel](/docs/guide/vercel-deployment/)
+- [通过 GitHub Actions 部署到单机 VPS](/docs/guide/vps-deployment/)
 
 相关文档已拆分到独立栏目：
 
