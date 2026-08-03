@@ -14,7 +14,11 @@ ensure_docker() {
     dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
     dnf install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
   fi
-  systemctl enable --now docker
+  if ! systemctl enable --now docker; then
+    systemctl status docker --no-pager --full || true
+    journalctl -u docker --no-pager --lines=100 || true
+    exit 1
+  fi
 }
 
 ensure_firewall() {
