@@ -41,7 +41,7 @@ def _build_s3_client():
         region_name=settings.s3_region_name,
         aws_access_key_id=settings.s3_access_key_id,
         aws_secret_access_key=settings.s3_secret_access_key,
-        config=BotoConfig(s3={"addressing_style": "virtual"}),
+        config=BotoConfig(s3={"addressing_style": settings.s3_addressing_style}),
     )
     return client
 
