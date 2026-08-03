@@ -7,6 +7,24 @@ if [[ "${EUID}" -ne 0 ]]; then
   exit 1
 fi
 
+ensure_kernel_modules() {
+  # Load Docker bridge-network dependencies and persist them across VPS reboots.
+  local module
+  local modules=(overlay br_netfilter nf_nat ip_tables iptable_nat xt_addrtype)
+
+  for module in "${modules[@]}"; do
+    modprobe "${module}"
+  done
+
+  printf '%s\n' "${modules[@]}" > /etc/modules-load.d/jellyfish-docker.conf
+  cat > /etc/sysctl.d/99-jellyfish-docker.conf <<'EOF'
+net.bridge.bridge-nf-call-iptables = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.ipv4.ip_forward = 1
+EOF
+  sysctl --system
+}
+
 ensure_docker() {
   # Install and start Docker Engine plus the Compose plugin.
   if ! command -v docker >/dev/null 2>&1; then
@@ -44,6 +62,7 @@ ensure_swap() {
   grep -q '^vm.swappiness=' /etc/sysctl.conf || echo 'vm.swappiness=10' >> /etc/sysctl.conf
 }
 
+ensure_kernel_modules
 ensure_docker
 ensure_firewall
 ensure_swap
