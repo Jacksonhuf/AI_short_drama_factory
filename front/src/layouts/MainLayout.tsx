@@ -15,6 +15,8 @@ import { useAppStore } from '../store/useAppStore'
 import { useTranslation } from 'react-i18next'
 import { TaskCenter } from '../pages/aiStudio/components/TaskCenter'
 import { TaskRuntimeProvider } from '../pages/aiStudio/components/TaskRuntimeProvider'
+import { AuthService } from '../services/generated'
+import { useAuthStore } from '../store/useAuthStore'
 
 const { Header, Sider, Content } = Layout
 
@@ -29,6 +31,7 @@ const MainLayout: React.FC = () => {
   const user = useAppStore((state) => state.user)
   const language = useAppStore((state) => state.language)
   const setLanguage = useAppStore((state) => state.setLanguage)
+  const clearSession = useAuthStore((state) => state.clearSession)
 
   const selectedKeys = useMemo(() => {
     if (location.pathname === '/projects' || location.pathname.startsWith('/projects/')) return ['projects']
@@ -140,7 +143,11 @@ const MainLayout: React.FC = () => {
       key: 'logout',
       label: t('user.logout'),
       onClick: () => {
-        // 这里保留占位，实际项目中可接入登录逻辑
+        /** Ends the signed browser session before returning to the password gate. */
+        void AuthService.logoutApiV1AuthLogoutPost().finally(() => {
+          clearSession()
+          navigate('/login', { replace: true })
+        })
       },
     },
   ]

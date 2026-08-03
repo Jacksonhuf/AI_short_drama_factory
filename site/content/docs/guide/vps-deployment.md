@@ -53,6 +53,21 @@ Caddy 在容器中监听宿主机的 80/443，并自动申请 TLS 证书。MySQL
 
 生产运行时 `.env` 仅保留在 VPS 的 `/opt/jellyfish/.env`，后续部署不会覆盖其中的密码或 API Key。
 
+## 管理员密码
+
+VPS 部署默认启用应用级管理员密码门禁。首次部署会在 `/opt/jellyfish/.env` 生成 `AUTH_ADMIN_PASSWORD` 与 `AUTH_SESSION_SECRET`；通过受控 SSH 登录后可查看初始密码：
+
+```bash
+grep '^AUTH_ADMIN_PASSWORD=' /opt/jellyfish/.env
+```
+
+不要将该值粘贴到聊天、代码库或 GitHub Actions 日志。若需替换密码，编辑该文件中的 `AUTH_ADMIN_PASSWORD`，然后重启后端和 Worker：
+
+```bash
+cd /opt/jellyfish
+docker compose --env-file .env -f vps/compose.yml up -d backend celery-worker
+```
+
 ## 首次部署后的检查
 
 ```bash

@@ -6,6 +6,7 @@ const baseURL = import.meta.env.VITE_API_BASE_URL ?? `${backendBaseUrl}/api`
 const http: AxiosInstance = axios.create({
   baseURL,
   timeout: 10000,
+  withCredentials: true,
 })
 
 http.interceptors.request.use(
@@ -19,7 +20,10 @@ http.interceptors.request.use(
 http.interceptors.response.use(
   (response: AxiosResponse) => response.data,
   (error) => {
-    // 这里可以统一处理错误提示、跳转登录等
+    // 遗留 axios 调用也必须遵循 HttpOnly 会话门禁。
+    if (error.response?.status === 401 && window.location.pathname !== '/login') {
+      window.location.assign('/login')
+    }
     return Promise.reject(error)
   },
 )
