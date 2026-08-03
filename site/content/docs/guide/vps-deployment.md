@@ -19,6 +19,8 @@ https://drama.xclawapi.com/api/* FastAPI
 
 Caddy 在容器中监听宿主机的 80/443，并自动申请 TLS 证书。MySQL、Redis、RustFS、后端端口不会映射到公网。
 
+内部 RustFS 使用 S3 path-style 寻址，即请求形如 `http://rustfs:9000/jellyfish-assets/...`；不能使用会将 bucket 拼到主机名的 virtual-host 寻址。
+
 在 Cloudflare 中配置：
 
 1. 添加 `A` 记录，将 `drama.xclawapi.com` 指向 VPS 公网 IPv4。
