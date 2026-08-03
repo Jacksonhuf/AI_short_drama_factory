@@ -46,12 +46,23 @@ set_environment_value() {
   chmod 600 "${ENV_FILE}"
 }
 
+ensure_environment_value() {
+  # Adds a newly introduced secret without replacing credentials from prior deployments.
+  local key="$1"
+  local value="$2"
+  if ! grep -q "^${key}=" "${ENV_FILE}"; then
+    set_environment_value "${key}" "${value}"
+  fi
+}
+
 if [[ ! -f "${ENV_FILE}" ]]; then
   write_initial_environment
 fi
 
 set_environment_value "DOMAIN" "${DOMAIN}"
 set_environment_value "JELLYFISH_IMAGE_TAG" "${IMAGE_TAG}"
+ensure_environment_value "AUTH_ADMIN_PASSWORD" "$(generate_secret)"
+ensure_environment_value "AUTH_SESSION_SECRET" "$(generate_secret)"
 
 docker compose \
   --env-file "${ENV_FILE}" \
