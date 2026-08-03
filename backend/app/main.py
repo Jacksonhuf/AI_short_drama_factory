@@ -6,10 +6,12 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.middleware.sessions import SessionMiddleware
 
 from app.api.v1 import router as api_v1_router
 from app.bootstrap import bootstrap_all_registries
 from app.config import settings
+from app.core.auth import AdminSessionMiddleware
 from app.core.db import close_db, init_db, uses_sqlite_database
 from app.schemas.common import ApiResponse
 
@@ -56,6 +58,7 @@ async def validation_exception_handler(request: Request, exc: Exception) -> JSON
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """应用生命周期：初始化运行期注册，并为本地 SQLite 准备数据库表。"""
+    settings.validate_auth_configuration()
     # 启动时：供应商注册 + 任务执行器注册（幂等）
     bootstrap_all_registries()
     # SQLite 是零配置的本地开发默认值；外部数据库仍由迁移/部署初始化流程管理。
@@ -79,6 +82,15 @@ app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(HTTPException, http_exception_handler)
 app.add_exception_handler(Exception, http_exception_handler)
 
+# 中间件注册顺序保证 CORS 外层处理认证 401，Session 外层为认证中间件提供 request.session。
+app.add_middleware(AdminSessionMiddleware)
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.auth_session_secret,
+    max_age=settings.auth_session_max_age_seconds,
+    https_only=settings.auth_cookie_secure,
+    same_site="lax",
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
