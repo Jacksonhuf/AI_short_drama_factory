@@ -53,7 +53,7 @@ export default function Login() {
     <main className="flex min-h-screen items-center justify-center bg-violet-50 px-4 py-8">
       <Card className="w-full max-w-md shadow-sm" bordered>
         <div className="mb-8 text-center">
-          <div className="mb-3 text-3xl font-semibold text-indigo-600">Jellyfish</div>
+          <div className="mb-3 text-3xl font-semibold text-indigo-600">元风</div>
           <Typography.Title level={3} className="!mb-2">
             管理员登录
           </Typography.Title>

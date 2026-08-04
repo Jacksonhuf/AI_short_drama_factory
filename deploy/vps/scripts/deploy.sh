@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Deploys preloaded Jellyfish images using a persistent, host-local runtime environment.
+# Deploys preloaded 元风 images using a persistent, host-local runtime environment.
 DEPLOY_PATH="${DEPLOY_PATH:-/opt/jellyfish}"
 IMAGE_TAG="${IMAGE_TAG:?IMAGE_TAG is required}"
 DOMAIN="${DOMAIN:?DOMAIN is required}"
@@ -72,7 +72,7 @@ docker compose \
 for attempt in $(seq 1 18); do
   if docker compose --env-file "${ENV_FILE}" -f "${STACK_PATH}/compose.yml" \
     exec -T backend curl --fail --silent http://127.0.0.1:8000/health >/dev/null; then
-    echo "Jellyfish backend is healthy."
+    echo "元风 backend is healthy."
     exit 0
   fi
   sleep 10

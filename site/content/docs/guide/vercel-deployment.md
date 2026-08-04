@@ -1,10 +1,10 @@
 ---
 title: "通过 GitHub Actions 部署前端到 Vercel"
 weight: 6
-description: "配置 Jellyfish 前端在推送 main 后自动部署到 Vercel。"
+description: "配置 元风 前端在推送 main 后自动部署到 Vercel。"
 ---
 
-Jellyfish 的 Vercel 工作流只部署 `front/` 中的 Vite 单页应用。FastAPI、Celery Worker、MySQL、Redis 和对象存储需要部署在支持常驻服务的独立环境中，不能由此工作流替代。
+元风 的 Vercel 工作流只部署 `front/` 中的 Vite 单页应用。FastAPI、Celery Worker、MySQL、Redis 和对象存储需要部署在支持常驻服务的独立环境中，不能由此工作流替代。
 
 ## 工作流行为
 
@@ -39,7 +39,7 @@ Jellyfish 的 Vercel 工作流只部署 `front/` 中的 Vite 单页应用。Fast
 | --- | --- | --- |
 | `VERCEL_TOKEN` | Vercel Account Settings → Tokens | 允许 GitHub Actions 调用 Vercel CLI。 |
 | `VERCEL_ORG_ID` | 在本地执行 `vercel link` 后生成的 `.vercel/project.json` | 标识 Vercel 团队或个人空间。 |
-| `VERCEL_FRONTEND_PROJECT_ID` | 同一 `.vercel/project.json` 的 `projectId` | 标识 Jellyfish 前端 Vercel 项目。 |
+| `VERCEL_FRONTEND_PROJECT_ID` | 同一 `.vercel/project.json` 的 `projectId` | 标识 元风 前端 Vercel 项目。 |
 | `VITE_BACKEND_URL` | 已部署后端的 HTTPS 基址 | 在前端构建时注入 API 地址。 |
 
 `.vercel/project.json` 包含项目标识，不应提交到仓库。可在已登录 Vercel CLI 的本机、`front/` 目录执行：

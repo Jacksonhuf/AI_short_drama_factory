@@ -1,7 +1,7 @@
 ---
 title: "通过 GitHub Actions 部署到单机 VPS"
 weight: 7
-description: "将 Jellyfish 全栈部署到 CentOS Stream VPS，并通过单域名提供前端与 API。"
+description: "将 元风 全栈部署到 CentOS Stream VPS，并通过单域名提供前端与 API。"
 ---
 
 本指南对应仓库中的 `.github/workflows/deploy-vps.yml` 和 `deploy/vps/`。它将前端、FastAPI、Celery Worker、MySQL、Redis、RustFS 与 Caddy 部署到同一台 VPS。

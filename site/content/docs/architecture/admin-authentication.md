@@ -1,10 +1,10 @@
 ---
 title: "管理员密码与会话门禁"
 weight: 3
-description: "Jellyfish 当前应用级管理员密码登录、Session Cookie 与 API 保护边界。"
+description: "元风 当前应用级管理员密码登录、Session Cookie 与 API 保护边界。"
 ---
 
-Jellyfish 使用单管理员密码门禁保护生产部署。它不是多用户或 RBAC 系统；当前只解决“公网访问者不能直接操作应用”的基础访问控制。
+元风 使用单管理员密码门禁保护生产部署。它不是多用户或 RBAC 系统；当前只解决“公网访问者不能直接操作应用”的基础访问控制。
 
 ## 会话模型
 

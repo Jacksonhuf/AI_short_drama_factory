@@ -1,7 +1,7 @@
-# Jellyfish — AI短編ドラマ制作スタジオ
+# 元风 — AI短編ドラマ制作スタジオ
 
 <p align="center">
-  <img src="./img/logo.svg" alt="Jellyfish Logo" width="160" />
+  <img src="./img/logo.svg" alt="元风 Logo" width="160" />
 </p>
 
 <p align="center">

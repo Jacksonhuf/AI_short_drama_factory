@@ -1,6 +1,6 @@
-# Jellyfish Site
+# 元风 Site
 
-Jellyfish 官网与文档站基于 Hugo + Hextra 构建。
+元风 官网与文档站基于 Hugo + Hextra 构建。
 
 ## 本地开发要求
 

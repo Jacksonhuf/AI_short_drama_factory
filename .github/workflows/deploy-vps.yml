@@ -1,4 +1,4 @@
-name: Deploy Jellyfish to VPS
+name: Deploy 元风 to VPS
 
 on:
   push:

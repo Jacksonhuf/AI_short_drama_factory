@@ -50,7 +50,7 @@ body:
     id: deploy
     attributes:
       label: 部署 / 运行方式
-      description: 你当前是如何运行 Jellyfish 的？
+      description: 你当前是如何运行 元风 的？
       options:
         - 本地开发（前后端分离）
         - Docker Compose（deploy/compose）
@@ -66,7 +66,7 @@ body:
       placeholder: |
         - OS：macOS 14 / Windows 11 / …
         - 浏览器：Chrome 120（若与前端相关）
-        - Jellyfish 分支或镜像 tag：…
+        - 元风 分支或镜像 tag：…
     validations:
       required: true
 
@@ -89,7 +89,7 @@ body:
     id: model_name
     attributes:
       label: 模型名称
-      description: 在 Jellyfish「模型管理」或接口中使用的具体模型标识（如 gpt-4o、claude-3-5-sonnet 等）。与模型无关可填「不适用」。
+      description: 在 元风「模型管理」或接口中使用的具体模型标识（如 gpt-4o、claude-3-5-sonnet 等）。与模型无关可填「不适用」。
       placeholder: 例如：gpt-4o-mini / 或写「不适用」
     validations:
       required: true
@@ -100,7 +100,7 @@ body:
       label: 是否使用自定义 API 基址（非官方默认 endpoint）
       description: 仅说明是否自定义，不要填写完整 URL 若含密钥。
       options:
-        - 否（使用默认或 Jellyfish 内配置）
+        - 否（使用默认或 元风 内配置）
         - 是（兼容网关 / 自建代理等，请勿贴密钥）
         - 不涉及模型调用
     validations:
