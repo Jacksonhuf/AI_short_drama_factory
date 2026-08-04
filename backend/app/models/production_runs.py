@@ -173,7 +173,7 @@ class ChapterProductionRunStep(Base, TimestampMixin):
         String(64), ForeignKey("chapter_production_runs.id", ondelete="CASCADE"), nullable=False
     )
     stage_key: Mapped[str] = mapped_column(String(64), nullable=False)
-    sequence: Mapped[int] = mapped_column(Integer, nullable=False)
+    step_order: Mapped[int] = mapped_column(Integer, nullable=False)
     adapter_version: Mapped[str] = mapped_column(String(32), nullable=False, default="v1")
     execution_mode: Mapped[ProductionExecutionMode] = mapped_column(String(32), nullable=False)
     status: Mapped[ProductionStepStatus] = mapped_column(
@@ -199,11 +199,11 @@ class ChapterProductionRunStep(Base, TimestampMixin):
     bindings: Mapped[list["ProductionRunTaskBinding"]] = relationship(back_populates="step")
 
     __table_args__ = (
-        UniqueConstraint("run_id", "sequence", name="uq_production_run_steps_sequence"),
+        UniqueConstraint("run_id", "step_order", name="uq_production_run_steps_order"),
         UniqueConstraint(
             "run_id", "idempotency_key", name="uq_production_run_steps_idempotency"
         ),
-        Index("ix_production_run_steps_run_status_sequence", "run_id", "status", "sequence"),
+        Index("ix_production_run_steps_run_status_order", "run_id", "status", "step_order"),
     )
 
 

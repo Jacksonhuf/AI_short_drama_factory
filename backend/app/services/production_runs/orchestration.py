@@ -150,7 +150,7 @@ async def _next_step(
     db: AsyncSession,
     *,
     run_id: str,
-    after_sequence: int,
+    after_step_order: int,
 ) -> ChapterProductionRunStep | None:
     """读取 manifest 中尚未处理的下一线性步骤。"""
 
@@ -159,9 +159,9 @@ async def _next_step(
             select(ChapterProductionRunStep)
             .where(
                 ChapterProductionRunStep.run_id == run_id,
-                ChapterProductionRunStep.sequence > after_sequence,
+                ChapterProductionRunStep.step_order > after_step_order,
             )
-            .order_by(ChapterProductionRunStep.sequence)
+            .order_by(ChapterProductionRunStep.step_order)
             .limit(1)
             .with_for_update()
         )
@@ -478,7 +478,7 @@ async def advance_run(  # pylint: disable=too-many-return-statements
             await db.execute(
                 select(ChapterProductionRunStep)
                 .where(ChapterProductionRunStep.run_id == run.id)
-                .order_by(ChapterProductionRunStep.sequence)
+                .order_by(ChapterProductionRunStep.step_order)
                 .limit(1)
                 .with_for_update()
             )
@@ -502,7 +502,7 @@ async def advance_run(  # pylint: disable=too-many-return-statements
         following = await _next_step(
             db,
             run_id=run.id,
-            after_sequence=step.sequence,
+            after_step_order=step.step_order,
         )
         if following is None:
             await _finish_run(

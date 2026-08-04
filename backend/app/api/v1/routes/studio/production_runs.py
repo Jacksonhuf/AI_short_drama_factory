@@ -51,7 +51,7 @@ async def _steps_for_run(
         await db.execute(
             select(ChapterProductionRunStep)
             .where(ChapterProductionRunStep.run_id == run_id)
-            .order_by(ChapterProductionRunStep.sequence)
+            .order_by(ChapterProductionRunStep.step_order)
         )
     ).scalars()
     return [ProductionRunStepRead.model_validate(step) for step in steps]

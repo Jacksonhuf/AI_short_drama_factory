@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS chapter_production_run_steps (
   id VARCHAR(64) NOT NULL COMMENT '步骤 ID',
   run_id VARCHAR(64) NOT NULL COMMENT '生产运行 ID',
   stage_key VARCHAR(64) NOT NULL COMMENT '稳定阶段标识',
-  sequence INT NOT NULL COMMENT 'manifest 显示顺序',
+  step_order INT NOT NULL COMMENT 'manifest 显示顺序',
   adapter_version VARCHAR(32) NOT NULL DEFAULT 'v1',
   execution_mode VARCHAR(32) NOT NULL COMMENT 'linear/fan_out/barrier/gate',
   status VARCHAR(32) NOT NULL DEFAULT 'pending',
@@ -61,9 +61,9 @@ CREATE TABLE IF NOT EXISTS chapter_production_run_steps (
   created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
   updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
   PRIMARY KEY (id),
-  UNIQUE KEY uq_production_run_steps_sequence (run_id, sequence),
+  UNIQUE KEY uq_production_run_steps_order (run_id, step_order),
   UNIQUE KEY uq_production_run_steps_idempotency (run_id, idempotency_key),
-  KEY ix_production_run_steps_run_status_sequence (run_id, status, sequence),
+  KEY ix_production_run_steps_run_status_order (run_id, status, step_order),
   CONSTRAINT fk_production_run_steps_run
     FOREIGN KEY (run_id) REFERENCES chapter_production_runs (id) ON DELETE CASCADE
 ) ENGINE=InnoDB COMMENT='章节生产运行步骤';

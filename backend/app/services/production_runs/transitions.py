@@ -167,14 +167,14 @@ class ProductionRunTransitionService:
                 id=uuid4().hex,
                 run_id=run.id,
                 stage_key=step["key"],
-                sequence=sequence,
+                step_order=step_order,
                 adapter_version=step["adapter_version"],
                 execution_mode=step["mode"],
                 status=ProductionStepStatus.pending,
                 attempt=0,
-                idempotency_key=f"{run.id}:step:{sequence}",
+                idempotency_key=f"{run.id}:step:{step_order}",
             )
-            for sequence, step in enumerate(manifest["steps"], start=1)
+            for step_order, step in enumerate(manifest["steps"], start=1)
         ]
         now = datetime.now(UTC)
         # TimestampMixin 的 server defaults 在 flush 后可用于稳定保存首次响应。
@@ -383,7 +383,7 @@ class ProductionRunTransitionService:
                 await self._db.execute(
                     select(ChapterProductionRunStep)
                     .where(ChapterProductionRunStep.run_id == run.id)
-                    .order_by(ChapterProductionRunStep.sequence)
+                    .order_by(ChapterProductionRunStep.step_order)
                     .limit(1)
                 )
             ).scalar_one_or_none()
