@@ -19,6 +19,7 @@ from app.core.task_manager.types import TaskStatus
 from app.dependencies import get_llm
 from app.models.task import GenerationTask, GenerationTaskStatus
 from app.models.task_links import GenerationTaskLink
+from app.services.task_dispatch import stage_task_dispatch
 from app.chains.agents import EntityMergerAgent, VariantAnalyzerAgent
 
 
@@ -169,6 +170,7 @@ async def create_divide_task(
         )
     )
     await db.flush()
+    await stage_task_dispatch(db, task_record.id)
 
     return AsyncTaskCreateResult(
         task_id=task_record.id,
@@ -323,6 +325,7 @@ async def create_extract_task(
         )
     )
     await db.flush()
+    await stage_task_dispatch(db, task_record.id)
     return AsyncTaskCreateResult(
         task_id=task_record.id,
         status=task_record.status,

@@ -11,6 +11,7 @@ from app.models.types import ChapterStatus, ProjectStyle, ProjectVisualStyle
 
 if TYPE_CHECKING:
     from app.models.studio_assets import Actor, Character, Costume, Prop, Scene
+    from app.models.production_runs import ChapterProductionRun
     from app.models.studio_shots import Shot
 
 
@@ -119,6 +120,11 @@ class Chapter(Base, TimestampMixin):
 
     project: Mapped["Project"] = relationship(back_populates="chapters")
     shots: Mapped[list["Shot"]] = relationship(
+        back_populates="chapter",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+    production_runs: Mapped[list["ChapterProductionRun"]] = relationship(
         back_populates="chapter",
         cascade="all, delete-orphan",
         passive_deletes=True,

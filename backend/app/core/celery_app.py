@@ -26,6 +26,18 @@ celery_app.conf.update(
     task_ignore_result=True,
     timezone="Asia/Shanghai",
     enable_utc=False,
+    beat_schedule={
+        "reconcile-task-dispatch-outbox": {
+            "task": "task.dispatch.reconcile",
+            "schedule": 30.0,
+            "args": (30, 100),
+        },
+        "reconcile-production-runs": {
+            "task": "production.run.reconcile",
+            "schedule": 30.0,
+            "args": (100,),
+        },
+    },
 )
 
 

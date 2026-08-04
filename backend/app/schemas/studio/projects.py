@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -73,10 +74,13 @@ class ChapterUpdate(BaseModel):
 
 
 class ChapterRead(ChapterBase):
+    """返回章节内容及乐观锁时间戳，供 AI 候选显式应用时防止覆盖并发编辑。"""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: str
     shot_count: int = Field(0, description="分镜数（shots 条数聚合）")
+    updated_at: datetime = Field(..., description="章节最后更新时间，用于乐观锁")
 
 
 class StyleOption(BaseModel):

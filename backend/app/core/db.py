@@ -70,7 +70,10 @@ async def init_db() -> None:
     import app.models.llm  # noqa: F401  # pylint: disable=unused-import
     import app.models.studio  # noqa: F401
     import app.models.task  # noqa: F401
+    import app.models.task_dispatch_outbox  # noqa: F401
     import app.models.task_links  # noqa: F401
+    import app.models.script_task_application  # noqa: F401
+    import app.models.production_runs  # noqa: F401
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

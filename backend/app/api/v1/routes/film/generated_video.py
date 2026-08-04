@@ -4,16 +4,14 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.task_manager import DeliveryMode, SqlAlchemyTaskStore, TaskManager
 from app.dependencies import get_db
-from app.models.task_links import GenerationTaskLink
 from app.schemas.studio.shots import ShotVideoPromptPackRead
-from app.services.film.generated_video import build_run_args, preview_prompt_and_images
-from app.services.studio.shot_status import mark_shot_generating
-from app.tasks.execute_task import enqueue_task_execution
+from app.services.film.generated_video import preview_prompt_and_images
+from app.services.film.generation_task_creation import create_video_task
+from app.services.task_dispatch import dispatch_staged_task
 from app.schemas.common import ApiResponse, created_response, success_response
 
-from .common import TaskCreated, _CreateOnlyTask
+from .common import TaskCreated
 from .video_request import VideoGenerationTaskRequest
 
 router = APIRouter()
@@ -59,9 +57,7 @@ async def create_video_generation_task(
 ) -> ApiResponse[TaskCreated]:
     """创建视频生成任务并后台执行，结果通过 /tasks/{task_id}/result 获取。"""
 
-    store = SqlAlchemyTaskStore(db)
-    tm = TaskManager(store=store, strategies={})
-    run_args = await build_run_args(
+    task = await create_video_task(
         db,
         shot_id=body.shot_id,
         reference_mode=body.reference_mode,
@@ -70,24 +66,7 @@ async def create_video_generation_task(
         ratio=body.ratio,
     )
 
-    task_record = await tm.create(
-        task=_CreateOnlyTask(),
-        mode=DeliveryMode.async_polling,
-        task_kind="video_generation",
-        run_args=run_args,
-    )
-    db.add(
-        GenerationTaskLink(
-            task_id=task_record.id,
-            resource_type="video",
-            relation_type="video",
-            relation_entity_id=body.shot_id,
-        )
-    )
-    await mark_shot_generating(db, shot_id=body.shot_id)
-
-    # 确保任务记录已提交，避免后台 runner 新 session 查询不到任务行而无法更新状态。
     await db.commit()
 
-    enqueue_task_execution(task_record.id)
-    return created_response(TaskCreated(task_id=task_record.id))
+    dispatch_staged_task(task.task_id)
+    return created_response(TaskCreated(task_id=task.task_id))

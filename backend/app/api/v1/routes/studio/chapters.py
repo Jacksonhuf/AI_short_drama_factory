@@ -22,6 +22,11 @@ from app.services.common import (
     require_entity,
 )
 from app.schemas.studio.projects import ChapterCreate, ChapterRead, ChapterUpdate
+from app.core.contracts.script_writing import (
+    AppliedScriptTaskResult,
+    ApplyScriptTaskResultRequest,
+)
+from app.services.script_writing import apply_script_task_result
 
 router = APIRouter()
 
@@ -119,6 +124,24 @@ async def get_chapter(
     res = await db.execute(count_stmt)
     shot_count = int(res.scalar() or 0)
     return success_response(ChapterRead.model_validate(obj).model_copy(update={"shot_count": shot_count}))
+
+
+@router.post(
+    "/{chapter_id}/apply-script-task-result",
+    response_model=ApiResponse[AppliedScriptTaskResult],
+    summary="显式应用 AI 剧本任务结果",
+    description="校验任务成功、章节归属、结果结构和章节版本后，幂等写入指定文本字段。",
+)
+async def apply_script_result(
+    chapter_id: str,
+    body: ApplyScriptTaskResultRequest,
+    db: AsyncSession = Depends(get_db),
+) -> ApiResponse[AppliedScriptTaskResult]:
+    """显式应用候选正文；写作 worker 本身永不覆盖章节。"""
+
+    result = await apply_script_task_result(db, chapter_id=chapter_id, request=body)
+    await db.commit()
+    return success_response(result)
 
 
 @router.patch(

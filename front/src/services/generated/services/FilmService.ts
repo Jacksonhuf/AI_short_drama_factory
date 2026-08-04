@@ -67,6 +67,7 @@ export class FilmService {
     }
     /**
      * 镜头分镜帧提示词生成（任务版）
+     * 原子创建帧提示词任务及 outbox，并在提交后尝试立即投递。
      * @returns ApiResponse_TaskCreated_ Successful Response
      * @throws ApiError
      */
@@ -189,6 +190,7 @@ export class FilmService {
     }
     /**
      * 请求取消任务
+     * 请求取消任务，并在直接进入终态时于提交后发送统一通知。
      * @returns ApiResponse_TaskCancelRead_ Successful Response
      * @throws ApiError
      */

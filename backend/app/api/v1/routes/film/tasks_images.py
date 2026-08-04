@@ -2,22 +2,14 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.task_manager import DeliveryMode, SqlAlchemyTaskStore, TaskManager
 from app.dependencies import get_db
-from app.models.task_links import GenerationTaskLink
 from app.schemas.common import ApiResponse, created_response
-from app.services.film.shot_frame_prompt_tasks import (
-    build_run_args as build_shot_frame_prompt_run_args,
-    normalize_frame_type,
-    relation_type_for_frame,
-)
-from app.services.studio.shot_status import mark_shot_generating
-from app.tasks.execute_task import enqueue_task_execution
+from app.services.film.generation_task_creation import create_frame_prompt_task
+from app.services.task_dispatch import dispatch_staged_task
 
 from .common import (
     ShotFramePromptRequest,
     TaskCreated,
-    _CreateOnlyTask,
 )
 router = APIRouter()
 
@@ -32,33 +24,14 @@ async def create_shot_frame_prompt_task(
     body: ShotFramePromptRequest,
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[TaskCreated]:
-    frame_type = normalize_frame_type(body.frame_type)
-    relation_type = relation_type_for_frame(frame_type)
+    """原子创建帧提示词任务及 outbox，并在提交后尝试立即投递。"""
 
-    store = SqlAlchemyTaskStore(db)
-    tm = TaskManager(store=store, strategies={})
-    run_args = await build_shot_frame_prompt_run_args(
+    task = await create_frame_prompt_task(
         db,
         shot_id=body.shot_id,
-        frame_type=frame_type,
+        frame_type=body.frame_type,
     )
-
-    task_record = await tm.create(
-        task=_CreateOnlyTask(),
-        mode=DeliveryMode.async_polling,
-        task_kind="shot_frame_prompt",
-        run_args=run_args,
-    )
-    db.add(
-        GenerationTaskLink(
-            task_id=task_record.id,
-            resource_type="prompt",
-            relation_type=relation_type,
-            relation_entity_id=body.shot_id,
-        )
-    )
-    await mark_shot_generating(db, shot_id=body.shot_id)
     await db.commit()
 
-    enqueue_task_execution(task_record.id)
-    return created_response(TaskCreated(task_id=task_record.id))
+    dispatch_staged_task(task.task_id)
+    return created_response(TaskCreated(task_id=task.task_id))

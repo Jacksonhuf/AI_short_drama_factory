@@ -18,6 +18,7 @@ weight: 7
 
 执行层
 ├── FastAPI 负责创建任务与返回 task_id
+├── TaskDispatchOutbox 保存可恢复的投递意图
 ├── Redis 作为 Celery broker
 └── Celery Worker 执行长耗时任务
 
@@ -47,7 +48,12 @@ weight: 7
   - `elapsed_ms`
 - 前端不直接读取 Celery task 状态
 - Celery 只负责执行，不负责对前端暴露业务状态
+- Celery Beat 每 30 秒触发 outbox 与 production run 对账，补偿投递或通知丢失
 - 任务投递统一使用 `task_kind` 识别具体执行器
+- 已接入 outbox 的创建路径会在同一事务中写入 `GenerationTask`、业务关联和
+  `TaskDispatchOutbox`，提交后再由统一 dispatcher 投递
+- dispatcher 使用确定性 Celery task id，已投递 outbox 的重复调用会幂等跳过
+- stale `pending` 和到期 `failed` outbox 可由 `task.dispatch.reconcile` 补投递
 
 全局任务列表接口当前规则：
 
@@ -79,6 +85,7 @@ weight: 7
 业务库：MySQL
 Broker：Redis
 执行器：Celery Worker
+调度器：Celery Beat
 ```
 
 配置规则：
@@ -103,6 +110,7 @@ Broker：Redis
 - `image-generation`
 - `video-generation`
 - `shot-frame-prompt`
+- `write-script`
 
 其中又分两类：
 
@@ -117,6 +125,7 @@ Broker：Redis
 - `analyze-prop-info`
 - `analyze-scene-info`
 - `analyze-costume-info`
+- `write-script`
 
 这些任务当前通过：
 
@@ -162,6 +171,24 @@ Broker：Redis
 - worker 执行后把状态与结果回写到 MySQL
 - 页面继续通过既有任务状态接口轮询和恢复
 
+其中，分镜帧提示词任务当前已作为首个低风险路径接入可靠投递：
+
+```text
+创建 GenerationTask + GenerationTaskLink + TaskDispatchOutbox
+→ 同一事务 commit
+→ TaskOutboxDispatcher
+→ task.execute(task_id)
+```
+
+其他既有路径暂时仍通过 `enqueue_task_execution(task_id)` 直接投递。该兼容
+入口保持原行为，后续按业务路径逐步迁移，不在基础设施落地时一次性改造。
+
+`task.execute` 在执行器返回后使用新 session 读取已提交状态。若任务已进入
+`succeeded / failed / cancelled`，则调用统一 terminal notification 扩展点。
+当前没有 production workflow binding，默认实现仅输出进程内幂等日志；
+后续 binding 必须按 `task_id` 提供持久化幂等。API 直接取消并立即进入终态
+的路径也会先提交，再触发同一扩展点。
+
 对核心任务（如 `divide`）进一步采用两阶段模型：
 
 ```text
@@ -202,12 +229,29 @@ Broker：Redis
 - `script_costume_info`
 - `script_optimize`
 - `script_simplify`
+- `script_write`
 
 当前已接入 registry 的非文本生成 executor 包括：
 
 - `image_generation`
 - `video_generation`
 - `shot_frame_prompt`
+
+### AI 剧本写作候选与显式应用
+
+`POST /api/v1/script-processing/write-script-async` 当前创建 `script_write`
+GenerationTask，并在同一事务写入章节关联和 `TaskDispatchOutbox`。同步 worker
+executor 使用默认 text 模型生成严格的 `ScriptWriteResult`，只把候选保存到
+`GenerationTask.result`，不会自动修改章节。
+
+候选只能通过
+`POST /api/v1/studio/chapters/{chapter_id}/apply-script-task-result` 应用。该事务会：
+
+- 校验任务已成功、确属目标章节且结果满足契约；
+- 只允许写入 `raw_text` 或 `condensed_text`；
+- 使用 `expected_chapter_updated_at` 阻止覆盖并发编辑；
+- 通过 `script_task_applications` 的 task 与 idempotency 唯一约束记录应用，
+  重试不会重复更新章节。
 
 ## 当前前端任务状态展示
 

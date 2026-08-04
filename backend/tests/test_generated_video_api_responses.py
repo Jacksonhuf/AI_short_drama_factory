@@ -136,13 +136,11 @@ def test_preview_video_generation_prompt_not_found_returns_api_response(
 def test_create_video_generation_task_returns_created_envelope(client: TestClient, monkeypatch) -> None:
     db = _FakeDB()
 
-    async def _fake_build_run_args(*_args, **_kwargs):
-        return {"prompt": "最终视频提示词", "images": ["file-1"]}
+    async def _fake_create_video_task(*_args, **_kwargs):
+        return SimpleNamespace(task_id="video-task-1")
 
-    monkeypatch.setattr(route, "build_run_args", _fake_build_run_args)
-    monkeypatch.setattr(route, "TaskManager", _FakeTaskManager)
-    monkeypatch.setattr(route, "enqueue_task_execution", lambda task_id: SimpleNamespace(id=f"celery-{task_id}"))
-    monkeypatch.setattr(route, "mark_shot_generating", _async_noop)
+    monkeypatch.setattr(route, "create_video_task", _fake_create_video_task)
+    monkeypatch.setattr(route, "dispatch_staged_task", lambda task_id: SimpleNamespace(id=f"celery-{task_id}"))
     app.dependency_overrides[get_db] = _override_db(db)
     try:
         response = client.post(
@@ -165,7 +163,6 @@ def test_create_video_generation_task_returns_created_envelope(client: TestClien
     assert body["data"]["task_id"] == "video-task-1"
     assert body["meta"] is None
     assert db.committed is True
-    assert len(db.added) == 1
 
 
 def test_create_video_generation_task_validation_error_returns_api_response(client: TestClient) -> None:

@@ -15,6 +15,8 @@ description: "记录当前真实生效的系统结构、状态流转、页面边
 - [产品概览与生产链路](/docs/architecture/product-overview/)
 - [管理员密码与会话门禁](/docs/architecture/admin-authentication/)
 - [任务执行架构](/docs/architecture/task-execution/)
+- [章节生产运行状态架构](/docs/architecture/chapter-production-runs/)
+- [AI 剧本写作与显式应用](/docs/architecture/script-writing/)
 - [LLM 默认模型解析](/docs/architecture/llm-default-model-resolution/)
 - [分镜状态流转说明](/docs/architecture/shot-status-flow/)
 - [分镜页面职责边界](/docs/architecture/shot-page-boundary/)

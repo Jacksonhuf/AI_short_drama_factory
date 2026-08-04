@@ -20,6 +20,7 @@ from app.services.script_processing_worker import (
     SceneInfoTaskExecutor,
     ScriptOptimizationTaskExecutor,
     ScriptSimplificationTaskExecutor,
+    ScriptWriteTaskExecutor,
 )
 from app.services.studio.image_task_runner import run_image_generation_task
 from app.services.worker.task_executor import AbstractAsyncDelegatingExecutor, AbstractWorkerTaskExecutor
@@ -50,6 +51,7 @@ task_executor_registry.register("script_scene_info", SceneInfoTaskExecutor())
 task_executor_registry.register("script_costume_info", CostumeInfoTaskExecutor())
 task_executor_registry.register("script_optimize", ScriptOptimizationTaskExecutor())
 task_executor_registry.register("script_simplify", ScriptSimplificationTaskExecutor())
+task_executor_registry.register("script_write", ScriptWriteTaskExecutor())
 task_executor_registry.register(
     "video_generation",
     AbstractAsyncDelegatingExecutor(

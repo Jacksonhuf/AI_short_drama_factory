@@ -33,6 +33,7 @@ from app.services.studio.file_usages import (
 )
 from app.services.studio.shot_status import mark_shot_generating, recompute_shot_status
 from app.services.studio.image_tasks import load_provider_config, resolve_image_model
+from app.services.task_dispatch import dispatch_staged_task, stage_task_dispatch
 from app.services.worker.async_task_support import cancel_if_requested_async
 from app.services.worker.task_logging import log_task_event, log_task_failure
 from app.utils.files import create_file_from_url_or_b64
@@ -250,8 +251,13 @@ async def create_image_task_and_link(
     resolution_profile: str | None = None,
     purpose: str = "generic",
     render_context: dict | None = None,
+    dispatch_after_commit: bool = True,
 ) -> str:
-    """创建图片生成任务，并建立任务关联。"""
+    """创建图片任务、业务关联和 outbox。
+
+    普通 HTTP 调用保持提交后立即投递；工作流传入 ``dispatch_after_commit=False``
+    后由编排事务统一提交和按 run 投递。
+    """
     store = SqlAlchemyTaskStore(db)
     tm = TaskManager(store=store, strategies={})
 
@@ -299,11 +305,10 @@ async def create_image_task_and_link(
     )
     if related_shot_id:
         await mark_shot_generating(db, shot_id=related_shot_id)
-    await db.commit()
-
-    from app.tasks.execute_task import enqueue_task_execution
-
-    enqueue_task_execution(task_record.id)
+    await stage_task_dispatch(db, task_record.id)
+    if dispatch_after_commit:
+        await db.commit()
+        dispatch_staged_task(task_record.id)
     return task_record.id
 
 

@@ -7,6 +7,7 @@ from app.api.v1.routes.studio import (
     entities,
     files,
     image_tasks,
+    production_runs,
     projects,
     prompts,
     shots,
@@ -18,6 +19,16 @@ router = APIRouter()
 
 router.include_router(projects.router, prefix="/projects", tags=["studio/projects"])
 router.include_router(chapters.router, prefix="/chapters", tags=["studio/chapters"])
+router.include_router(
+    production_runs.chapter_runs_router,
+    prefix="/chapters",
+    tags=["studio/production-runs"],
+)
+router.include_router(
+    production_runs.router,
+    prefix="/production-runs",
+    tags=["studio/production-runs"],
+)
 
 router.include_router(shots.router, prefix="/shots", tags=["studio/shots"])
 router.include_router(shots.details_router, prefix="/shot-details", tags=["studio/shot-details"])

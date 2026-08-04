@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useState, useEffect, useMemo, useRef } from 'react'
 import { Card, Button, Tag, Space, Table, Empty, Modal, Input, Dropdown, message } from 'antd'
 import type { MenuProps, TableColumnsType } from 'antd'
 import {
@@ -7,9 +7,11 @@ import {
   LoadingOutlined,
   MoreOutlined,
   PlusOutlined,
+  RobotOutlined,
   ScissorOutlined,
   StopOutlined,
   SyncOutlined,
+  ThunderboltOutlined,
 } from '@ant-design/icons'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ScriptProcessingService, StudioChaptersService } from '../../../../../services/generated'
@@ -29,6 +31,9 @@ import {
   upsertRelationTaskStateInMap,
   useChapterDivisionTaskMapPolling,
 } from '../chapterDivisionTasks'
+import { ScriptWritingWizardModal } from '../../../writing/ScriptWritingWizardModal'
+import { ProductionRunDrawer } from '../../../production/ProductionRunDrawer'
+import type { ProductionPreset } from '../../../../../services/generated'
 
 const { TextArea } = Input
 const CREATE_PARAM = 'create'
@@ -48,6 +53,10 @@ export function ChaptersTab() {
   const [createContent, setCreateContent] = useState('')
   const [chapterFlowMap, setChapterFlowMap] = useState<Record<string, ChapterFlowStats>>({})
   const [chapterDivisionActionId, setChapterDivisionActionId] = useState<string | null>(null)
+  const [writingChapter, setWritingChapter] = useState<Chapter | null>(null)
+  const [writingTaskId, setWritingTaskId] = useState<string | null>(null)
+  const [productionChapter, setProductionChapter] = useState<Chapter | null>(null)
+  const [productionPreset, setProductionPreset] = useState<ProductionPreset>('prepare_shots')
   const taskUiUpsert = useTaskUiStore((state) => state.upsertTask)
   const taskUiRemove = useTaskUiStore((state) => state.removeTask)
   const syncedTaskIdsRef = useRef<string[]>([])
@@ -282,7 +291,7 @@ export function ChaptersTab() {
     }
   }
 
-  const handleCancelDivideTask = async (record: Chapter) => {
+  const handleCancelDivideTask = useCallback(async (record: Chapter) => {
     const activeTask = chapterDivisionTaskMap[record.id]
     if (!activeTask) return
     setChapterDivisionActionId(record.id)
@@ -311,7 +320,12 @@ export function ChaptersTab() {
     } finally {
       setChapterDivisionActionId(null)
     }
-  }
+  }, [
+    chapterDivisionTaskMap,
+    setChapterDivisionTaskMap,
+    taskCopy.cancelRequestedMessage,
+    taskCopy.cancelledImmediatelyMessage,
+  ])
 
   useEffect(() => {
     const nextTaskIds: string[] = []
@@ -354,6 +368,51 @@ export function ChaptersTab() {
     const state = getChapterPreparationState(record)
     const activeTask = chapterDivisionTaskMap[record.id]
     return [
+      {
+        key: 'ai-writing',
+        label: 'AI 写剧本',
+        icon: <RobotOutlined />,
+        onClick: () => {
+          setWritingTaskId(null)
+          setWritingChapter(record)
+        },
+      },
+      {
+        key: 'production-script',
+        label: '自动生产 · 剧本辅助',
+        icon: <ThunderboltOutlined />,
+        onClick: () => {
+          setProductionPreset('script_assist')
+          setProductionChapter(record)
+        },
+      },
+      {
+        key: 'production-shots',
+        label: '自动生产 · 分镜准备',
+        icon: <ThunderboltOutlined />,
+        onClick: () => {
+          setProductionPreset('prepare_shots')
+          setProductionChapter(record)
+        },
+      },
+      {
+        key: 'production-frames',
+        label: '自动生产 · 帧准备',
+        icon: <ThunderboltOutlined />,
+        onClick: () => {
+          setProductionPreset('prepare_frames')
+          setProductionChapter(record)
+        },
+      },
+      {
+        key: 'production-video',
+        label: '自动生产 · 受控视频',
+        icon: <ThunderboltOutlined />,
+        onClick: () => {
+          setProductionPreset('controlled_video')
+          setProductionChapter(record)
+        },
+      },
       {
         key: 'shots',
         label: '查看分镜',
@@ -595,6 +654,44 @@ export function ChaptersTab() {
             patchChapterLocal(editingChapter.id, { rawText: next.rawText })
           }
           void refresh()
+        }}
+      />
+
+      {projectId ? (
+        <ScriptWritingWizardModal
+          key={writingChapter?.id ?? 'writing-closed'}
+          open={!!writingChapter}
+          projectId={projectId}
+          chapterId={writingChapter?.id ?? ''}
+          chapterTitle={writingChapter?.title}
+          initialTaskId={writingTaskId}
+          onClose={() => {
+            setWritingChapter(null)
+            setWritingTaskId(null)
+          }}
+          onApplied={refresh}
+        />
+      ) : null}
+
+      <ProductionRunDrawer
+        key={productionChapter?.id ?? 'production-closed'}
+        open={!!productionChapter}
+        chapterId={productionChapter?.id ?? null}
+        chapterTitle={productionChapter?.title}
+        initialPreset={productionPreset}
+        onClose={() => setProductionChapter(null)}
+        onReviewScriptCandidate={(taskId) => {
+          if (!productionChapter) return
+          setWritingTaskId(taskId)
+          setWritingChapter(productionChapter)
+        }}
+        onOpenPreparation={() => {
+          if (!projectId || !productionChapter) return
+          navigate(getChapterShotsPath(projectId, productionChapter.id))
+        }}
+        onOpenWorkspace={() => {
+          if (!projectId || !productionChapter) return
+          navigate(getChapterStudioPath(projectId, productionChapter.id))
         }}
       />
 
