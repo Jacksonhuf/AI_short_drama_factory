@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Prepares a CentOS Stream host for the low-resource Jellyfish Docker stack.
+# Prepares a CentOS Stream host for the low-resource 元风 Docker stack.
 if [[ "${EUID}" -ne 0 ]]; then
   echo "This script must run as root." >&2
   exit 1

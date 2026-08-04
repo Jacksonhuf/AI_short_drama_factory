@@ -1,7 +1,7 @@
-# Jellyfish — AI Short Drama Studio
+# 元风 — AI Short Drama Studio
 
 <p align="center">
-  <img src="./docs/img/logo.svg" alt="Jellyfish Logo" width="160" />
+  <img src="./docs/img/logo.svg" alt="元风 Logo" width="160" />
 </p>
 
 <p align="center">
@@ -47,7 +47,7 @@ shot preparation, video generation, and export.
 
 ## ✨ Core Capabilities
 
-Jellyfish is not just a single “AI image/video” utility. It is a
+元风 is not just a single “AI image/video” utility. It is a
 production workspace built around:
 
 - script understanding

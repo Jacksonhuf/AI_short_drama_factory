@@ -1,7 +1,7 @@
-# Jellyfish AI短剧工厂 / AI Short Drama Studio
+# 元风 AI短剧工厂 / AI Short Drama Studio
 
 <p align="center">
-  <img src="./img/logo.svg" alt="Jellyfish Logo" width="160" />
+  <img src="./img/logo.svg" alt="元风 Logo" width="160" />
 </p>
 
 <p align="center">
@@ -28,7 +28,7 @@
 
 ## ✨ 核心能力
 
-Jellyfish 不是单点的“AI 出图 / AI 出视频”工具，而是一套面向短剧生产的工作台。  
+元风不是单点的“AI 出图 / AI 出视频”工具，而是一套面向短剧生产的工作台。
 它围绕“剧本理解、分镜准备、资产一致性、生成执行、任务追踪”构建了一条可落地的主流程。
 
 ### 1. AI 剧本理解与分镜拆解
@@ -222,5 +222,5 @@ pnpm dev
 
 ## 💬 交流与反馈 / Community
 
-- **[GitHub Issues](https://github.com/Forget-C/Jellyfish/issues)** — 功能建议、Bug 反馈、使用讨论
+- **[GitHub Issues](https://github.com/Forget-C/元风/issues)** — 功能建议、Bug 反馈、使用讨论
 

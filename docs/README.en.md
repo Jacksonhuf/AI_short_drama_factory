@@ -1,7 +1,7 @@
-# Jellyfish — AI Short Drama Studio
+# 元风 — AI Short Drama Studio
 
 <p align="center">
-  <img src="./img/logo.svg" alt="Jellyfish Logo" width="160" />
+  <img src="./img/logo.svg" alt="元风 Logo" width="160" />
 </p>
 
 <p align="center">
@@ -215,7 +215,7 @@ Notes: merge commits (`Merge …`), `Revert …`, and commits created during a m
 
 ## 🚧 Development status / Roadmap
 
-The project is **actively developed**. Below is the current completion and planned work. Feedback and contributions via [Issues](https://github.com/Forget-C/Jellyfish/issues) are welcome.
+The project is **actively developed**. Below is the current completion and planned work. Feedback and contributions via [Issues](https://github.com/Forget-C/元风/issues) are welcome.
 
 ### ✅ Done
 
@@ -246,5 +246,5 @@ We welcome Pull Requests, Issues, and Stars, and we will work with the community
 
 ## 💬 Community & feedback
 
-- **[GitHub Issues](https://github.com/Forget-C/Jellyfish/issues)** — Feature suggestions, bug reports, and usage discussions
+- **[GitHub Issues](https://github.com/Forget-C/元风/issues)** — Feature suggestions, bug reports, and usage discussions
 - **WeChat / Discord** — To be set up; we will update the entry on this page later

@@ -1,7 +1,7 @@
 ---
 title: "安装说明"
 weight: 1
-description: "安装 Jellyfish 所需的基础环境与依赖。"
+description: "安装 元风 所需的基础环境与依赖。"
 ---
 
 ## 环境要求
@@ -16,8 +16,8 @@ description: "安装 Jellyfish 所需的基础环境与依赖。"
 ## 获取代码
 
 ```bash
-git clone https://github.com/Forget-C/Jellyfish.git
-cd Jellyfish
+git clone https://github.com/Forget-C/元风.git
+cd 元风
 ```
 
 ## 目录建议

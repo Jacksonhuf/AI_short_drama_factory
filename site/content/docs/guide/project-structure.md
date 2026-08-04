@@ -1,7 +1,7 @@
 ---
 title: "项目结构"
 weight: 1
-description: "快速理解 Jellyfish 的顶层目录和主业务链路。"
+description: "快速理解 元风 的顶层目录和主业务链路。"
 ---
 
 ## 顶层目录

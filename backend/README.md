@@ -1,5 +1,5 @@
 
-# Jellyfish Backend
+# 元风 Backend
 
 基于 FastAPI + LangChain/LangGraph + SQLAlchemy 的后端 API，使用 **uv** 管理依赖。
 

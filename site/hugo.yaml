@@ -1,6 +1,6 @@
 baseURL: "/"
 languageCode: "zh-cn"
-title: "Jellyfish AI 短剧工厂"
+title: "元风 AI 短剧工厂"
 defaultContentLanguage: "zh"
 hasCJKLanguage: true
 enableRobotsTXT: true
@@ -54,7 +54,7 @@ params:
     - 短剧生产
     - 分镜编辑
     - AI视频生成
-    - Jellyfish
+    - 元风
   images:
     - /images/og-default.svg
   search:

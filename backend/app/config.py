@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     )
 
     # App
-    app_name: str = "Jellyfish API"
+    app_name: str = "元风 API"
     debug: bool = False
 
     # API
