@@ -719,7 +719,7 @@ async def _bindings(
             )
             .where(ProductionRunTaskBinding.run_id == run_id)
             .order_by(
-                ChapterProductionRunStep.sequence,
+                ChapterProductionRunStep.step_order,
                 ProductionRunTaskBinding.attempt,
             )
         )
@@ -1278,12 +1278,12 @@ async def _position_run_at_stage(
         await db.execute(
             select(ChapterProductionRunStep)
             .where(ChapterProductionRunStep.run_id == run.id)
-            .order_by(ChapterProductionRunStep.sequence)
+            .order_by(ChapterProductionRunStep.step_order)
         )
     ).scalars().all()
     target = next(step for step in steps if step.stage_key == stage_key)
     for step in steps:
-        if step.sequence < target.sequence:
+        if step.step_order < target.step_order:
             step.status = ProductionStepStatus.succeeded
     run.current_step_id = target.id
     run.status = ProductionRunStatus.running

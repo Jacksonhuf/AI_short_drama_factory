@@ -50,7 +50,7 @@ class ProductionRunStepRead(BaseModel):
     id: str
     run_id: str
     stage_key: str
-    sequence: int
+    step_order: int
     adapter_version: str
     execution_mode: ProductionExecutionMode
     status: ProductionStepStatus

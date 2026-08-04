@@ -11,7 +11,7 @@ export type ProductionRunStepRead = {
     id: string;
     run_id: string;
     stage_key: string;
-    sequence: number;
+    step_order: number;
     adapter_version: string;
     execution_mode: ProductionExecutionMode;
     status: ProductionStepStatus;

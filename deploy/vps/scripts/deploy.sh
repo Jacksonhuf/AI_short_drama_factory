@@ -67,7 +67,12 @@ ensure_environment_value "AUTH_SESSION_SECRET" "$(generate_secret)"
 docker compose \
   --env-file "${ENV_FILE}" \
   -f "${STACK_PATH}/compose.yml" \
-  up -d --remove-orphans
+  up -d --remove-orphans || {
+    echo "Compose up failed; dumping backend-init-db logs:"
+    docker compose --env-file "${ENV_FILE}" -f "${STACK_PATH}/compose.yml" \
+      logs --no-color backend-init-db || true
+    exit 1
+  }
 
 for attempt in $(seq 1 18); do
   if docker compose --env-file "${ENV_FILE}" -f "${STACK_PATH}/compose.yml" \
