@@ -12,12 +12,40 @@ from sqlalchemy.orm import DeclarativeBase
 
 from app.config import settings
 
+# 这些表在 MySQL 生产环境由 backend/sql 增量脚本创建，避免 ORM create_all
+# 与既有表字符集/外键定义不一致导致 1215 错误。
+MYSQL_MIGRATION_MANAGED_TABLES = frozenset(
+    {
+        "task_dispatch_outbox",
+        "script_task_applications",
+        "chapter_production_runs",
+        "chapter_production_run_steps",
+        "chapter_production_run_step_items",
+        "production_run_task_bindings",
+        "production_run_transitions",
+    }
+)
+
+
+def uses_mysql_database(database_url: str) -> bool:
+    """判断连接串是否指向 MySQL/MariaDB。"""
+    normalized = database_url.lower()
+    return normalized.startswith("mysql") or normalized.startswith("mariadb")
+
+
+def _mysql_engine_connect_args(database_url: str) -> dict[str, Any]:
+    """为 MySQL 连接统一 utf8mb4，减少 ORM 建表与既有库字符集不一致的风险。"""
+    if uses_mysql_database(database_url):
+        return {"charset": "utf8mb4"}
+    return {}
+
 
 def _build_engine() -> AsyncEngine:
     return create_async_engine(
         settings.database_url,
         echo=settings.debug,
         future=True,
+        connect_args=_mysql_engine_connect_args(settings.database_url),
     )
 
 
@@ -75,8 +103,22 @@ async def init_db() -> None:
     import app.models.script_task_application  # noqa: F401
     import app.models.production_runs  # noqa: F401
 
+    if uses_sqlite_database(settings.database_url):
+        tables = None
+    elif uses_mysql_database(settings.database_url):
+        tables = [
+            table
+            for name, table in Base.metadata.tables.items()
+            if name not in MYSQL_MIGRATION_MANAGED_TABLES
+        ]
+    else:
+        tables = None
+
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        if tables is None:
+            await conn.run_sync(Base.metadata.create_all)
+        else:
+            await conn.run_sync(Base.metadata.create_all, tables=tables)
 
 
 async def close_db() -> None:
