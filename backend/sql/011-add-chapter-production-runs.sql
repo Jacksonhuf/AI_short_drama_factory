@@ -1,3 +1,5 @@
+SET NAMES utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+
 CREATE TABLE IF NOT EXISTS chapter_production_runs (
   id VARCHAR(64) NOT NULL COMMENT '章节生产运行 ID',
   project_id VARCHAR(64) NOT NULL COMMENT '项目 ID',
@@ -32,11 +34,8 @@ CREATE TABLE IF NOT EXISTS chapter_production_runs (
   KEY ix_chapter_production_runs_chapter_created (chapter_id, created_at),
   KEY ix_chapter_production_runs_status_updated (status, updated_at),
   KEY ix_chapter_production_runs_reconcile (status, last_reconciled_at, updated_at),
-  CONSTRAINT fk_chapter_production_runs_project
-    FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE,
-  CONSTRAINT fk_chapter_production_runs_chapter
-    FOREIGN KEY (chapter_id) REFERENCES chapters (id) ON DELETE CASCADE
-) ENGINE=InnoDB COMMENT='章节生产运行';
+  KEY ix_chapter_production_runs_project_id (project_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='章节生产运行';
 
 CREATE TABLE IF NOT EXISTS chapter_production_run_steps (
   id VARCHAR(64) NOT NULL COMMENT '步骤 ID',
@@ -66,7 +65,7 @@ CREATE TABLE IF NOT EXISTS chapter_production_run_steps (
   KEY ix_production_run_steps_run_status_order (run_id, status, step_order),
   CONSTRAINT fk_production_run_steps_run
     FOREIGN KEY (run_id) REFERENCES chapter_production_runs (id) ON DELETE CASCADE
-) ENGINE=InnoDB COMMENT='章节生产运行步骤';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='章节生产运行步骤';
 
 CREATE TABLE IF NOT EXISTS chapter_production_run_step_items (
   id VARCHAR(64) NOT NULL COMMENT 'fan-out 项 ID',
@@ -92,7 +91,7 @@ CREATE TABLE IF NOT EXISTS chapter_production_run_step_items (
   KEY ix_production_step_items_entity (entity_type, entity_id),
   CONSTRAINT fk_production_step_items_step
     FOREIGN KEY (step_id) REFERENCES chapter_production_run_steps (id) ON DELETE CASCADE
-) ENGINE=InnoDB COMMENT='章节生产运行 fan-out 项';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='章节生产运行 fan-out 项';
 
 CREATE TABLE IF NOT EXISTS production_run_task_bindings (
   id VARCHAR(64) NOT NULL COMMENT '任务绑定 ID',
@@ -120,10 +119,8 @@ CREATE TABLE IF NOT EXISTS production_run_task_bindings (
   CONSTRAINT fk_production_run_task_bindings_step
     FOREIGN KEY (step_id) REFERENCES chapter_production_run_steps (id) ON DELETE CASCADE,
   CONSTRAINT fk_production_run_task_bindings_item
-    FOREIGN KEY (item_id) REFERENCES chapter_production_run_step_items (id) ON DELETE CASCADE,
-  CONSTRAINT fk_production_run_task_bindings_task
-    FOREIGN KEY (task_id) REFERENCES generation_tasks (id) ON DELETE RESTRICT
-) ENGINE=InnoDB COMMENT='工作流 GenerationTask 尝试历史';
+    FOREIGN KEY (item_id) REFERENCES chapter_production_run_step_items (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='工作流 GenerationTask 尝试历史';
 
 CREATE TABLE IF NOT EXISTS production_run_transitions (
   id VARCHAR(64) NOT NULL COMMENT '迁移审计 ID',
@@ -148,4 +145,4 @@ CREATE TABLE IF NOT EXISTS production_run_transitions (
     FOREIGN KEY (run_id) REFERENCES chapter_production_runs (id) ON DELETE CASCADE,
   CONSTRAINT fk_production_run_transitions_step
     FOREIGN KEY (step_id) REFERENCES chapter_production_run_steps (id) ON DELETE SET NULL
-) ENGINE=InnoDB COMMENT='生产运行状态迁移与幂等审计';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='生产运行状态迁移与幂等审计';

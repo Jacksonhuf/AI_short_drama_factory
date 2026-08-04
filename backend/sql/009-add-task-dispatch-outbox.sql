@@ -1,3 +1,5 @@
+SET NAMES utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+
 CREATE TABLE IF NOT EXISTS task_dispatch_outbox (
   id VARCHAR(64) NOT NULL COMMENT 'Outbox ID',
   task_id VARCHAR(64) NOT NULL COMMENT '业务任务 ID；每个任务最多一个投递意图',
@@ -11,6 +13,5 @@ CREATE TABLE IF NOT EXISTS task_dispatch_outbox (
   PRIMARY KEY (id),
   UNIQUE KEY uq_task_dispatch_outbox_task_id (task_id),
   KEY ix_task_dispatch_outbox_status_available_at (status, available_at),
-  CONSTRAINT fk_task_dispatch_outbox_task_id
-    FOREIGN KEY (task_id) REFERENCES generation_tasks (id) ON DELETE CASCADE
-) ENGINE=InnoDB COMMENT='GenerationTask 可靠投递 outbox';
+  KEY ix_task_dispatch_outbox_task_id (task_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='GenerationTask 可靠投递 outbox';
