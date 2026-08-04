@@ -63,8 +63,7 @@ CREATE TABLE IF NOT EXISTS chapter_production_run_steps (
   UNIQUE KEY uq_production_run_steps_order (run_id, step_order),
   UNIQUE KEY uq_production_run_steps_idempotency (run_id, idempotency_key),
   KEY ix_production_run_steps_run_status_order (run_id, status, step_order),
-  CONSTRAINT fk_production_run_steps_run
-    FOREIGN KEY (run_id) REFERENCES chapter_production_runs (id) ON DELETE CASCADE
+  KEY ix_production_run_steps_run_id (run_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='章节生产运行步骤';
 
 CREATE TABLE IF NOT EXISTS chapter_production_run_step_items (
@@ -89,8 +88,7 @@ CREATE TABLE IF NOT EXISTS chapter_production_run_step_items (
   UNIQUE KEY uq_production_step_items_idempotency (step_id, idempotency_key),
   KEY ix_production_step_items_step_status (step_id, status),
   KEY ix_production_step_items_entity (entity_type, entity_id),
-  CONSTRAINT fk_production_step_items_step
-    FOREIGN KEY (step_id) REFERENCES chapter_production_run_steps (id) ON DELETE CASCADE
+  KEY ix_production_step_items_step_id (step_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='章节生产运行 fan-out 项';
 
 CREATE TABLE IF NOT EXISTS production_run_task_bindings (
@@ -114,12 +112,9 @@ CREATE TABLE IF NOT EXISTS production_run_task_bindings (
     (step_id, item_scope_id, attempt, task_kind),
   KEY ix_production_run_task_bindings_run_step (run_id, step_id),
   KEY ix_production_run_task_bindings_task_notified (task_id, notified_at),
-  CONSTRAINT fk_production_run_task_bindings_run
-    FOREIGN KEY (run_id) REFERENCES chapter_production_runs (id) ON DELETE CASCADE,
-  CONSTRAINT fk_production_run_task_bindings_step
-    FOREIGN KEY (step_id) REFERENCES chapter_production_run_steps (id) ON DELETE CASCADE,
-  CONSTRAINT fk_production_run_task_bindings_item
-    FOREIGN KEY (item_id) REFERENCES chapter_production_run_step_items (id) ON DELETE CASCADE
+  KEY ix_production_run_task_bindings_run_id (run_id),
+  KEY ix_production_run_task_bindings_step_id (step_id),
+  KEY ix_production_run_task_bindings_item_id (item_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='工作流 GenerationTask 尝试历史';
 
 CREATE TABLE IF NOT EXISTS production_run_transitions (
@@ -141,8 +136,6 @@ CREATE TABLE IF NOT EXISTS production_run_transitions (
   UNIQUE KEY uq_production_run_transitions_version (run_id, transition_version),
   UNIQUE KEY uq_production_run_transitions_idempotency (run_id, idempotency_key),
   KEY ix_production_run_transitions_run_created (run_id, created_at),
-  CONSTRAINT fk_production_run_transitions_run
-    FOREIGN KEY (run_id) REFERENCES chapter_production_runs (id) ON DELETE CASCADE,
-  CONSTRAINT fk_production_run_transitions_step
-    FOREIGN KEY (step_id) REFERENCES chapter_production_run_steps (id) ON DELETE SET NULL
+  KEY ix_production_run_transitions_run_id (run_id),
+  KEY ix_production_run_transitions_step_id (step_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='生产运行状态迁移与幂等审计';
