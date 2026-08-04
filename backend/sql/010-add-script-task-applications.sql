@@ -1,3 +1,5 @@
+SET NAMES utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+
 CREATE TABLE IF NOT EXISTS script_task_applications (
   id VARCHAR(64) NOT NULL COMMENT '应用记录 ID',
   task_id VARCHAR(64) NOT NULL COMMENT '已应用的 script_write 任务',
@@ -12,8 +14,5 @@ CREATE TABLE IF NOT EXISTS script_task_applications (
   UNIQUE KEY uq_script_task_applications_task_id (task_id),
   UNIQUE KEY uq_script_task_applications_idempotency_key (idempotency_key),
   KEY ix_script_task_applications_chapter_id (chapter_id),
-  CONSTRAINT fk_script_task_applications_task_id
-    FOREIGN KEY (task_id) REFERENCES generation_tasks (id) ON DELETE RESTRICT,
-  CONSTRAINT fk_script_task_applications_chapter_id
-    FOREIGN KEY (chapter_id) REFERENCES chapters (id) ON DELETE RESTRICT
-) ENGINE=InnoDB COMMENT='AI 剧本任务结果显式应用审计';
+  KEY ix_script_task_applications_task_id (task_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='AI 剧本任务结果显式应用审计';

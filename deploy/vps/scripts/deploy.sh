@@ -68,9 +68,9 @@ docker compose \
   --env-file "${ENV_FILE}" \
   -f "${STACK_PATH}/compose.yml" \
   up -d --remove-orphans || {
-    echo "Compose up failed; dumping backend-init-db logs:"
+    echo "Compose up failed; dumping init job logs:"
     docker compose --env-file "${ENV_FILE}" -f "${STACK_PATH}/compose.yml" \
-      logs --no-color backend-init-db || true
+      logs --no-color backend-init-db mysql-init-sql || true
     exit 1
   }
 
