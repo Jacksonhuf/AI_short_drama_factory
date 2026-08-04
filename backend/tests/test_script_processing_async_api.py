@@ -48,11 +48,11 @@ def test_divide_async_returns_created_task_payload(client, monkeypatch) -> None:
             relation_entity_id="chapter-1",
         )
 
-    def _fake_spawn(task_id: str) -> None:
+    def _fake_dispatch(task_id: str) -> None:
         called["task_id"] = task_id
 
     monkeypatch.setattr(script_processing_route, "create_divide_task", _fake_create_divide_task)
-    monkeypatch.setattr(script_processing_route, "spawn_divide_task", _fake_spawn)
+    monkeypatch.setattr(script_processing_route, "dispatch_staged_task", _fake_dispatch)
     app.dependency_overrides[get_db] = _override_db()
     try:
         response = client.post(
@@ -99,11 +99,11 @@ def test_extract_async_returns_created_task_payload(client, monkeypatch) -> None
             relation_entity_id="chapter-1",
         )
 
-    def _fake_spawn(task_id: str) -> None:
+    def _fake_dispatch(task_id: str) -> None:
         called["task_id"] = task_id
 
     monkeypatch.setattr(script_processing_route, "create_extract_task", _fake_create_extract_task)
-    monkeypatch.setattr(script_processing_route, "spawn_extract_task", _fake_spawn)
+    monkeypatch.setattr(script_processing_route, "dispatch_staged_task", _fake_dispatch)
     app.dependency_overrides[get_db] = _override_db()
     try:
         response = client.post(

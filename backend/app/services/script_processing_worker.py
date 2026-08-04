@@ -18,7 +18,9 @@ from app.chains.agents import (
     SceneInfoAnalysisAgent,
     ScriptOptimizerAgent,
     ScriptSimplifierAgent,
+    ScriptWriterAgent,
 )
+from app.core.contracts.script_writing import ScriptWriteRequest, ScriptWriteResult
 from app.chains.agents.script_processing_agents import (
     ScriptConsistencyCheckResult,
     ScriptDivisionResult,
@@ -146,6 +148,16 @@ class ScriptSimplificationResultGenerator(AbstractLLMResultGenerator):
         return agent.extract(script_text=str(run_args.get("script_text") or ""))
 
 
+class ScriptWriteResultGenerator(AbstractLLMResultGenerator):
+    """使用系统默认 text 模型生成结构化写作候选。"""
+
+    thinking = True
+
+    def generate_with_llm(self, llm, run_args: dict[str, Any]) -> ScriptWriteResult:
+        request = ScriptWriteRequest.model_validate(run_args.get("request"))
+        return ScriptWriterAgent(llm).write(request)
+
+
 class DivideTaskExecutor(AbstractWorkerTaskExecutor):
     task_kind = "script_divide"
     timeout_seconds = 1800.0
@@ -250,6 +262,13 @@ class ScriptSimplificationTaskExecutor(_SimpleLLMTaskExecutor):
     generator_class = ScriptSimplificationResultGenerator
 
 
+class ScriptWriteTaskExecutor(_SimpleLLMTaskExecutor):
+    """执行 script_write，但不自动修改章节；应用只能通过显式 API 完成。"""
+
+    task_kind = "script_write"
+    generator_class = ScriptWriteResultGenerator
+
+
 def generate_division_result(
     *,
     db: Session,
@@ -352,3 +371,9 @@ def run_script_optimization_task_sync(task_id: str) -> None:
 
 def run_script_simplification_task_sync(task_id: str) -> None:
     ScriptSimplificationTaskExecutor().run(task_id)
+
+
+def run_script_write_task_sync(task_id: str) -> None:
+    """同步 worker 入口，供测试和运维诊断复用。"""
+
+    ScriptWriteTaskExecutor().run(task_id)

@@ -59,6 +59,11 @@ class _FakeTaskDB:
             obj.created_at = now
         obj.updated_at = now
 
+    async def commit(self) -> None:
+        """模拟依赖会话提交，供终态通知时序测试使用。"""
+
+        return None
+
     async def delete(self, obj: object) -> None:
         if isinstance(obj, GenerationTaskLink):
             self.links.pop(obj.id, None)
@@ -126,6 +131,7 @@ def test_cancel_task_returns_success_envelope(client: TestClient, monkeypatch) -
 
     monkeypatch.setattr(task_status_route, "SqlAlchemyTaskStore", _FakeStore)
     monkeypatch.setattr(task_status_route, "revoke_task_execution", lambda _task_id: False)
+    monkeypatch.setattr(task_status_route, "notify_task_terminal", lambda _task_id: True)
     db = _FakeTaskDB()
     app.dependency_overrides[get_db] = _override_db(db)
     try:
@@ -182,6 +188,7 @@ def test_cancel_task_revokes_celery_and_marks_cancelled(client: TestClient, monk
 
     monkeypatch.setattr(task_status_route, "SqlAlchemyTaskStore", _FakeStore)
     monkeypatch.setattr(task_status_route, "revoke_task_execution", lambda task_id: task_id == "task-2")
+    monkeypatch.setattr(task_status_route, "notify_task_terminal", lambda _task_id: True)
     db = _FakeTaskDB()
     app.dependency_overrides[get_db] = _override_db(db)
     try:

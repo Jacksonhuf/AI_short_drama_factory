@@ -40,6 +40,7 @@ import {
 } from '../project/ProjectWorkbench/chapterDivisionTasks'
 import { StudioEntitiesApi } from '../../../services/studioEntities'
 import { resolveAssetUrl } from '../assets/utils'
+import { ProductionPreparationGateBanner } from '../production/ProductionPreparationGateBanner'
 
 const { Header, Content } = Layout
 const extractTaskCopy = TASK_COPY.scriptExtract
@@ -1521,6 +1522,10 @@ export function ChapterShotEditPage() {
           flexDirection: 'column',
         }}
       >
+        <ProductionPreparationGateBanner
+          chapterId={chapterId}
+          onConfirmed={loadPage}
+        />
         <Card
           title="分镜准备"
           style={{ flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}

@@ -5,7 +5,16 @@ from app.models.base import TimestampMixin
 
 from app.models.llm import Model, ModelSettings, Provider
 from app.models.task import GenerationTask
+from app.models.task_dispatch_outbox import TaskDispatchOutbox, TaskDispatchOutboxStatus
 from app.models.task_links import GenerationTaskLink
+from app.models.script_task_application import ScriptTaskApplication
+from app.models.production_runs import (
+    ChapterProductionRun,
+    ChapterProductionRunStep,
+    ChapterProductionRunStepItem,
+    ProductionRunTaskBinding,
+    ProductionRunTransition,
+)
 from app.models.types import FileUsageKind
 
 from app.models.studio import (
@@ -73,5 +82,13 @@ __all__ = [
     "Model",
     "ModelSettings",
     "GenerationTask",
+    "TaskDispatchOutbox",
+    "TaskDispatchOutboxStatus",
     "GenerationTaskLink",
+    "ScriptTaskApplication",
+    "ChapterProductionRun",
+    "ChapterProductionRunStep",
+    "ChapterProductionRunStepItem",
+    "ProductionRunTaskBinding",
+    "ProductionRunTransition",
 ]

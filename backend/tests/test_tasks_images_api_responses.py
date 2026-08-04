@@ -52,13 +52,11 @@ def _override_db(db: _FakeDB):
 def test_create_shot_frame_prompt_task_returns_created_envelope(client: TestClient, monkeypatch) -> None:
     db = _FakeDB()
 
-    async def _fake_build(*_args, **_kwargs):
-        return {"shot_id": "shot-1", "frame_type": "first"}
+    async def _fake_create(*_args, **_kwargs):
+        return SimpleNamespace(task_id="prompt-task-1")
 
-    monkeypatch.setattr(route, "build_shot_frame_prompt_run_args", _fake_build)
-    monkeypatch.setattr(route, "TaskManager", _FakeTaskManager)
-    monkeypatch.setattr(route, "enqueue_task_execution", lambda task_id: SimpleNamespace(id=f"celery-{task_id}"))
-    monkeypatch.setattr(route, "mark_shot_generating", _async_noop)
+    monkeypatch.setattr(route, "create_frame_prompt_task", _fake_create)
+    monkeypatch.setattr(route, "dispatch_staged_task", lambda task_id: SimpleNamespace(task_id=task_id))
     app.dependency_overrides[get_db] = _override_db(db)
     try:
         response = client.post(
@@ -75,7 +73,6 @@ def test_create_shot_frame_prompt_task_returns_created_envelope(client: TestClie
     assert body["data"]["task_id"] == "prompt-task-1"
     assert body["meta"] is None
     assert db.committed is True
-    assert len(db.added) == 1
 
 
 def test_create_shot_frame_prompt_task_invalid_frame_type_returns_api_response(
@@ -83,10 +80,10 @@ def test_create_shot_frame_prompt_task_invalid_frame_type_returns_api_response(
 ) -> None:
     db = _FakeDB()
 
-    def _fake_normalize(_frame_type: str) -> str:
+    async def _fake_create(*_args, **_kwargs):
         raise HTTPException(status_code=400, detail="frame_type must be one of: first/last/key")
 
-    monkeypatch.setattr(route, "normalize_frame_type", _fake_normalize)
+    monkeypatch.setattr(route, "create_frame_prompt_task", _fake_create)
     app.dependency_overrides[get_db] = _override_db(db)
     try:
         response = client.post(
@@ -110,10 +107,10 @@ def test_create_shot_frame_prompt_task_missing_shot_detail_returns_api_response(
 ) -> None:
     db = _FakeDB()
 
-    async def _fake_build(*_args, **_kwargs):
+    async def _fake_create(*_args, **_kwargs):
         raise HTTPException(status_code=404, detail="ShotDetail not found")
 
-    monkeypatch.setattr(route, "build_shot_frame_prompt_run_args", _fake_build)
+    monkeypatch.setattr(route, "create_frame_prompt_task", _fake_create)
     app.dependency_overrides[get_db] = _override_db(db)
     try:
         response = client.post(

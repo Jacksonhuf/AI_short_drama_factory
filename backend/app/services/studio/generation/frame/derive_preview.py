@@ -65,7 +65,7 @@ def _score_frame_guidance_line(
     return score
 
 
-def _build_frame_guidance_reason(
+def _build_frame_guidance_reason(  # pylint: disable=too-many-return-statements
     *,
     frame_type: str,
     category: str,
@@ -115,7 +115,7 @@ def _build_frame_guidance_reason(
     return "当前已有更高优先级 guidance 进入最终 prompt，因此该条目未被保留。"
 
 
-def _build_frame_guidance_reason_tag(
+def _build_frame_guidance_reason_tag(  # pylint: disable=too-many-return-statements
     *,
     frame_type: str,
     category: str,

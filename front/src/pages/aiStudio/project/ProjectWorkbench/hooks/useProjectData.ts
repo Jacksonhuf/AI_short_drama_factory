@@ -46,6 +46,7 @@ export type Chapter = MockChapter & {
 }
 
 function toUIChapter(c: ChapterRead): Chapter {
+  /** 保留服务端更新时间，供 AI 候选应用时执行真实的乐观锁校验。 */
   return {
     id: c.id,
     projectId: c.project_id,
@@ -55,7 +56,7 @@ function toUIChapter(c: ChapterRead): Chapter {
     rawText: c.raw_text ?? '',
     storyboardCount: c.shot_count ?? c.storyboard_count ?? 0,
     status: c.status ?? 'draft',
-    updatedAt: new Date().toISOString(),
+    updatedAt: c.updated_at,
   }
 }
 

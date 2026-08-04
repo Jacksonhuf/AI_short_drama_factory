@@ -103,18 +103,18 @@ def infer_action_beat_phase(*, text: str, index: int, total: int) -> ActionBeatP
     trigger_hits = _count_hits(normalized, _TRIGGER_KEYWORDS)
     peak_hits = _count_hits(normalized, _PEAK_KEYWORDS)
 
+    phase: ActionBeatPhase = "peak"
     if aftermath_hits > 0 and aftermath_hits >= max(trigger_hits, peak_hits):
-        return "aftermath"
-    if trigger_hits > 0 and trigger_hits >= peak_hits:
-        return "trigger"
-    if peak_hits > 0:
-        return "peak"
-
-    if index == 0:
-        return "trigger"
-    if total >= 3 and index == total - 1:
-        return "aftermath"
-    return "peak"
+        phase = "aftermath"
+    elif trigger_hits > 0 and trigger_hits >= peak_hits:
+        phase = "trigger"
+    elif peak_hits > 0:
+        phase = "peak"
+    elif index == 0:
+        phase = "trigger"
+    elif total >= 3 and index == total - 1:
+        phase = "aftermath"
+    return phase
 
 
 def infer_action_beat_sequence(action_beats: list[str] | None) -> list[ActionBeatPhaseItem]:

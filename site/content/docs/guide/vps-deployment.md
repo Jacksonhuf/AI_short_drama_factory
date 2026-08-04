@@ -4,7 +4,7 @@ weight: 7
 description: "将 元风 全栈部署到 CentOS Stream VPS，并通过单域名提供前端与 API。"
 ---
 
-本指南对应仓库中的 `.github/workflows/deploy-vps.yml` 和 `deploy/vps/`。它将前端、FastAPI、Celery Worker、MySQL、Redis、RustFS 与 Caddy 部署到同一台 VPS。
+本指南对应仓库中的 `.github/workflows/deploy-vps.yml` 和 `deploy/vps/`。它将前端、FastAPI、Celery Worker、Celery Beat、MySQL、Redis、RustFS 与 Caddy 部署到同一台 VPS。Beat 负责工作流 outbox 和运行状态的周期性恢复对账。
 
 > 该方案适合低频使用或演示环境。`1 vCPU / 2GB RAM / 20GB SSD` 容量紧张：工作流会创建 2GB swap、限制容器内存并将 Celery 并发固定为 1，但不适合高并发或长期保存大量视频。
 

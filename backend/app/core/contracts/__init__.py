@@ -9,6 +9,14 @@ from app.core.contracts.image_generation import (
 )
 from app.core.contracts.provider import ProviderConfig, ProviderKey
 from app.core.contracts.video_generation import VideoGenerationInput, VideoGenerationResult
+from app.core.contracts.script_writing import (
+    AppliedScriptTaskResult,
+    ApplyScriptTaskResultRequest,
+    ScriptApplyTargetField,
+    ScriptWriteMode,
+    ScriptWriteRequest,
+    ScriptWriteResult,
+)
 
 __all__ = [
     "ProviderConfig",
@@ -20,4 +28,10 @@ __all__ = [
     "ImageItem",
     "InputImageRef",
     "ResponseFormat",
+    "AppliedScriptTaskResult",
+    "ApplyScriptTaskResultRequest",
+    "ScriptApplyTargetField",
+    "ScriptWriteMode",
+    "ScriptWriteRequest",
+    "ScriptWriteResult",
 ]

@@ -13,6 +13,7 @@ from app.dependencies import get_db
 from app.models.task_links import GenerationTaskLink
 from app.schemas.common import ApiResponse, PaginatedData, created_response, empty_response, paginated_response, success_response
 from app.services.common import entity_not_found
+from app.services.task_terminal_notification import notify_task_terminal
 from app.tasks.execute_task import revoke_task_execution
 
 from .common import (
@@ -191,6 +192,8 @@ async def cancel_task(
     body: TaskCancelRequest,
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[TaskCancelRead]:
+    """请求取消任务，并在直接进入终态时于提交后发送统一通知。"""
+
     store = SqlAlchemyTaskStore(db)
     rec = await store.request_cancel(task_id, body.reason)
     if rec is None:
@@ -201,6 +204,9 @@ async def cancel_task(
         if rec is None:
             raise HTTPException(status_code=404, detail=entity_not_found("Task"))
         effective_immediately = True
+    if effective_immediately:
+        await db.commit()
+        notify_task_terminal(task_id)
     return success_response(
         TaskCancelRead(
             task_id=rec.id,

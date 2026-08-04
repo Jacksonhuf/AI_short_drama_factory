@@ -8,16 +8,11 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.contracts.image_generation import ImageResolutionProfile, ImageTargetRatio
 from app.dependencies import get_db
-from app.models.studio import (
-    ShotDetail,
-    ShotFrameType,
-    ShotFrameImage,
-)
+from app.models.studio import ShotFrameType
 from app.schemas.common import ApiResponse, created_response, success_response
 from app.schemas.studio.shots import RenderedShotFramePromptRead, ShotLinkedAssetItem
 from app.api.v1.routes.film.common import TaskCreated
@@ -37,7 +32,6 @@ from app.services.studio.generation.asset_image import (
 from app.services.studio.generation.frame import (
     build_frame_base_draft as _build_frame_base_draft_service,
     build_frame_context as _build_frame_context_service,
-    build_frame_submission_payload as _build_frame_submission_payload_service,
     derive_frame_preview as _derive_frame_preview_service,
 )
 from app.services.film.shot_frame_prompt_tasks import build_run_args as _build_shot_frame_prompt_run_args_service
@@ -45,6 +39,10 @@ from app.services.studio.generation.frame.derive_preview import (
     to_rendered_shot_frame_prompt_read as _to_rendered_shot_frame_prompt_read_service,
 )
 from app.services.studio.image_task_runner import create_image_task_and_link as _create_image_task_and_link_service
+from app.services.studio.shot_frame_image_tasks import (
+    create_shot_frame_image_task as _create_shot_frame_image_task_service,
+)
+from app.services.task_dispatch import dispatch_staged_task
 
 
 router = APIRouter()
@@ -368,82 +366,26 @@ async def create_shot_frame_image_generation_task(
     body: ShotFrameImageTaskRequest,
     db: AsyncSession = Depends(get_db),
 ) -> ApiResponse[TaskCreated]:
-    """为镜头分镜帧图片生成任务（基于 `shot_id + frame_type` 自动定位数据）。"""
-    prompt = (body.prompt or "").strip()
-    if not prompt:
+    """通过共享 service 创建帧图任务，并在事务提交后投递 outbox。"""
+
+    if not body.prompt.strip():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="prompt is required for shot frame generation",
         )
-    shot_detail = await db.get(ShotDetail, shot_id)
-    if shot_detail is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="ShotDetail not found")
-    render_guidance = await _load_frame_render_guidance(
-        db=db,
+    task = await _create_shot_frame_image_task_service(
+        db,
         shot_id=shot_id,
         frame_type=body.frame_type,
-    )
-    base = _build_frame_base_draft_service(
-        shot_id=shot_id,
-        frame_type=body.frame_type,
-        prompt=prompt,
-        director_command_summary=render_guidance["director_command_summary"],
-        continuity_guidance=render_guidance["continuity_guidance"],
-        frame_specific_guidance=render_guidance["frame_specific_guidance"],
-        composition_anchor=render_guidance["composition_anchor"],
-        screen_direction_guidance=render_guidance["screen_direction_guidance"],
-    )
-    context = _build_frame_context_service(
-        shot_id=shot_id,
-        frame_type=body.frame_type,
-        items=body.images,
-    )
-    submission = _build_frame_submission_payload_service(
-        base=base,
-        context=context,
-    )
-    ref_images = await _resolve_reference_image_refs_by_file_ids_service(db, file_ids=submission.images)
-
-    # 通过 shot_id 与 frame_type 定位 ShotFrameImage，作为落库目标；若不存在则创建占位记录。
-    shot_frame_image_stmt = (
-        select(ShotFrameImage)
-        .where(ShotFrameImage.shot_detail_id == shot_id, ShotFrameImage.frame_type == body.frame_type)
-        .limit(1)
-    )
-    shot_frame_image = (await db.execute(shot_frame_image_stmt)).scalars().first()
-    if shot_frame_image is None:
-        # 缺少对应 frame_type 的 ShotFrameImage slot：创建占位记录（file_id 允许为空）。
-        # 后续图片生成完成后会覆盖写回 file_id。
-        shot_frame_image = ShotFrameImage(
-            shot_detail_id=shot_id,
-            frame_type=body.frame_type,
-            file_id=None,
-            width=None,
-            height=None,
-            format="png",
-        )
-        db.add(shot_frame_image)
-        await db.flush()
-        await db.refresh(shot_frame_image)
-    else:
-        # 已存在则补齐默认字段（不改写 file_id）。
-        if not shot_frame_image.format:
-            shot_frame_image.format = "png"
-
-    submission_extra = dict(submission.extra or {})
-    task_id = await _create_image_task_and_link_service(
-        db=db,
+        prompt=body.prompt,
+        linked_assets=body.images,
         model_id=body.model_id,
-        relation_type="shot_frame_image",
-        relation_entity_id=str(shot_frame_image.id),
-        prompt=submission.prompt,
-        images=ref_images if ref_images else None,
         target_ratio=body.target_ratio,
         resolution_profile=body.resolution_profile,
-        purpose="video_reference",
-        render_context=submission_extra.get("render_context"),
     )
-    return created_response(TaskCreated(task_id=task_id))
+    await db.commit()
+    dispatch_staged_task(task.task_id)
+    return created_response(TaskCreated(task_id=task.task_id))
 
 
 @router.post(

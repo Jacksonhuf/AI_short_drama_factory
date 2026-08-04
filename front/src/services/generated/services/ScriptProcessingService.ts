@@ -24,11 +24,33 @@ import type { ScriptDividerRequest } from '../models/ScriptDividerRequest';
 import type { ScriptExtractRequest } from '../models/ScriptExtractRequest';
 import type { ScriptOptimizeRequest } from '../models/ScriptOptimizeRequest';
 import type { ScriptSimplifyRequest } from '../models/ScriptSimplifyRequest';
+import type { ScriptWriteRequest } from '../models/ScriptWriteRequest';
 import type { VariantAnalysisRequest } from '../models/VariantAnalysisRequest';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 export class ScriptProcessingService {
+    /**
+     * 异步生成 AI 剧本候选
+     * 使用系统默认文本模型创建 script_write 任务；结果需经章节 apply API 显式应用。
+     * @returns ApiResponse_AsyncTaskCreateRead_ Successful Response
+     * @throws ApiError
+     */
+    public static writeScriptAsyncApiV1ScriptProcessingWriteScriptAsyncPost({
+        requestBody,
+    }: {
+        requestBody: ScriptWriteRequest,
+    }): CancelablePromise<ApiResponse_AsyncTaskCreateRead_> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/script-processing/write-script-async',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
     /**
      * 异步将剧本分割为多个镜头
      * 创建章节分镜提取任务并立即返回 task_id；前端可通过任务状态接口轮询。

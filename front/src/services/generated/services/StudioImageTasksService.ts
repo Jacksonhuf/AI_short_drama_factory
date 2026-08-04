@@ -180,7 +180,7 @@ export class StudioImageTasksService {
     }
     /**
      * 镜头分镜帧图片生成（任务版）
-     * 为镜头分镜帧图片生成任务（基于 `shot_id + frame_type` 自动定位数据）。
+     * 通过共享 service 创建帧图任务，并在事务提交后投递 outbox。
      * @returns ApiResponse_TaskCreated_ Successful Response
      * @throws ApiError
      */

@@ -2,9 +2,11 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { ApiResponse_AppliedScriptTaskResult_ } from '../models/ApiResponse_AppliedScriptTaskResult_';
 import type { ApiResponse_ChapterRead_ } from '../models/ApiResponse_ChapterRead_';
 import type { ApiResponse_NoneType_ } from '../models/ApiResponse_NoneType_';
 import type { ApiResponse_PaginatedData_ChapterRead__ } from '../models/ApiResponse_PaginatedData_ChapterRead__';
+import type { ApplyScriptTaskResultRequest } from '../models/ApplyScriptTaskResultRequest';
 import type { ChapterCreate } from '../models/ChapterCreate';
 import type { ChapterUpdate } from '../models/ChapterUpdate';
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -141,6 +143,32 @@ export class StudioChaptersService {
             path: {
                 'chapter_id': chapterId,
             },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+    /**
+     * 显式应用 AI 剧本任务结果
+     * 校验任务成功、章节归属、结果结构和章节版本后，幂等写入指定文本字段。
+     * @returns ApiResponse_AppliedScriptTaskResult_ Successful Response
+     * @throws ApiError
+     */
+    public static applyScriptResultApiV1StudioChaptersChapterIdApplyScriptTaskResultPost({
+        chapterId,
+        requestBody,
+    }: {
+        chapterId: string,
+        requestBody: ApplyScriptTaskResultRequest,
+    }): CancelablePromise<ApiResponse_AppliedScriptTaskResult_> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/studio/chapters/{chapter_id}/apply-script-task-result',
+            path: {
+                'chapter_id': chapterId,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
             errors: {
                 422: `Validation Error`,
             },

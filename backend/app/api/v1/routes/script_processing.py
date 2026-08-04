@@ -58,8 +58,6 @@ from app.services.script_processing_tasks import (
     pick_variant_relation_entity_id,
     spawn_consistency_task,
     spawn_costume_info_task,
-    spawn_divide_task,
-    spawn_extract_task,
     spawn_character_portrait_task,
     spawn_merge_task,
     spawn_prop_info_task,
@@ -80,10 +78,43 @@ from app.services.studio import (
 )
 from app.services.studio.shot_semantic_defaults import apply_shot_semantic_defaults_from_draft
 from app.api.v1.routes.film.common import AsyncTaskCreateRead
+from app.core.contracts.script_writing import ScriptWriteRequest
+from app.services.script_writing import create_script_write_task
+from app.services.task_dispatch import dispatch_staged_task
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/script-processing", tags=["script-processing"])
+
+
+# ============================================================================
+# 0. ScriptWriterAgent - AI 剧本写作
+# ============================================================================
+
+@router.post(
+    "/write-script-async",
+    response_model=ApiResponse[AsyncTaskCreateRead],
+    summary="异步生成 AI 剧本候选",
+    description="使用系统默认文本模型创建 script_write 任务；结果需经章节 apply API 显式应用。",
+)
+async def write_script_async(
+    request: ScriptWriteRequest,
+    db: AsyncSession = Depends(get_db),
+) -> ApiResponse[AsyncTaskCreateRead]:
+    """原子创建任务、章节关联和 outbox，并在事务提交后立即尝试投递。"""
+
+    task_info = await create_script_write_task(db, request=request)
+    await db.commit()
+    dispatch_staged_task(task_info.task_id)
+    return success_response(
+        AsyncTaskCreateRead(
+            task_id=task_info.task_id,
+            status=task_info.status,
+            reused=task_info.reused,
+            relation_type=task_info.relation_type,
+            relation_entity_id=task_info.relation_entity_id,
+        )
+    )
 
 
 # ============================================================================
@@ -122,7 +153,7 @@ async def divide_script_async(
     )
     await db.commit()
     if not task_info.reused:
-        spawn_divide_task(task_info.task_id)
+        dispatch_staged_task(task_info.task_id)
     return success_response(
         AsyncTaskCreateRead(
             task_id=task_info.task_id,
@@ -957,7 +988,7 @@ async def extract_script_async(
     )
     await db.commit()
     if not task_info.reused:
-        spawn_extract_task(task_info.task_id)
+        dispatch_staged_task(task_info.task_id)
     return success_response(
         AsyncTaskCreateRead(
             task_id=task_info.task_id,
